@@ -1,0 +1,88 @@
+syntax = "proto2";
+
+package example;
+
+import "appootb/permission/method.proto";
+import "appootb/permission/service.proto";
+import "google/api/annotations.proto";
+
+enum RequestType {
+    _NONE = 0;
+    TYPE1 = 1; // request type 1
+    // request type 2
+    TYPE2 = 2;
+}
+
+//
+//
+// Message Request type
+//
+message Request {
+    //
+    // leading comment
+    // 2rd comment line
+    //
+    required int32 id = 1;
+    optional string name = 2 [default="abc"];
+    optional RequestType type = 3; // enum field
+    repeated string array = 4; // string array
+    map<string, RequestType> map = 5; // map field
+}
+
+message Response {
+    message Embed {
+        optional int32 id = 1; // response id
+    }
+
+    optional Embed embed = 1; // embed message
+
+    oneof test_oneof {
+        string name0 = 2; // test oneof name 0
+        string name1 = 3; // test oneof name 1
+        string name2 = 4; // test oneof name 2
+    }
+}
+
+// Example Service.
+//
+// # markdown h1
+// > markdown test
+service example {
+    // service scope
+    option (appootb.permission.service.visible) = {
+        scope: DEFAULT_SCOPE
+    };
+
+    // test1 comment
+    rpc test1 (Request) returns (Response) {
+        option (appootb.permission.method.token) = {
+            required: LOW_TOKEN
+        };
+    }
+}
+
+// Example2 Service.
+service Example_b {
+    // service scope
+    option (appootb.permission.service.visible) = {
+        scope: ALL_SCOPES
+    };
+
+    // test2 comment
+    rpc test2 (Request) returns (Response) {
+        option (appootb.permission.method.token) = {
+            required: MIDDLE_TOKEN
+        };
+        option (google.api.http) = {
+            post: "/example/test"
+            body: "*"
+        };
+    }
+
+    // test3 interface
+    rpc Test_a (Request) returns (Response) {
+        option (appootb.permission.method.token) = {
+            required: INNER_TOKEN
+        };
+    }
+}
