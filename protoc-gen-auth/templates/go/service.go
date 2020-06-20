@@ -18,10 +18,15 @@ const serviceTpl = `
 		}
 
 		{{- if (hasGw .) }}
-		// Register scoped gateway handler.
-		return impl.RegisterGateway(permission.VisibleScope_{{ (scope .) }}, Register{{ .Name.UpperCamelCase }}Handler)
+		// Register scoped gateway handler server.
+		for _, mux := range impl.GetScopedGatewayMux(permission.VisibleScope_{{ (scope .) }}) {
+			err := Register{{ .Name.UpperCamelCase }}HandlerServer(impl.Context(), mux, srv)
+			if err != nil {
+				return err
+			}
+		}
 		{{- else }}// No gateway generated.
-		return nil
 		{{- end }}
+		return nil
 	}
 `
