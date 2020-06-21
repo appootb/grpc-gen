@@ -41,6 +41,12 @@ func RegisterExampleBScopeServer(auth service.Authenticator, impl service.Implem
 	for _, grpc := range impl.GetScopedGRPCServer(permission.VisibleScope_ALL_SCOPES) {
 		RegisterExampleBServer(grpc, srv)
 	}
-	// Register scoped gateway handler.
-	return impl.RegisterGateway(permission.VisibleScope_ALL_SCOPES, RegisterExampleBHandler)
+	// Register scoped gateway handler server.
+	for _, mux := range impl.GetScopedGatewayMux(permission.VisibleScope_ALL_SCOPES) {
+		err := RegisterExampleBHandlerServer(impl.Context(), mux, srv)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
