@@ -101,16 +101,17 @@ func (fn Func) GolangImports(file pgs.File) []string {
 	imps := make(map[pgs.FilePath]int)
 	for _, service := range file.Services() {
 		for _, method := range service.Methods() {
-			imps[fn.ImportPath(method.Input())]++
-			imps[fn.ImportPath(method.Output())]++
+			if method.Input().Package() != method.Package() {
+				imps[fn.ImportPath(method.Input())]++
+			}
+			if method.Output().Package() != method.Package() {
+				imps[fn.ImportPath(method.Output())]++
+			}
 		}
 	}
 	files := make([]string, 0, len(imps))
-	for file := range imps {
-		if file == "." {
-			continue
-		}
-		files = append(files, string(file))
+	for f := range imps {
+		files = append(files, string(f))
 	}
 	sort.Strings(files)
 	return files
