@@ -2,6 +2,7 @@ package shared
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/appootb/protobuf/go/permission"
 	"github.com/golang/protobuf/proto"
@@ -74,4 +75,43 @@ func (fn Func) GatewayDefined(svc pgs.Service) bool {
 	}
 
 	return false
+}
+
+func (fn Func) IsServerStreaming(method pgs.Method) bool {
+	return method.ServerStreaming() && !method.ClientStreaming()
+}
+
+func (fn Func) GolangInputMessageName(method pgs.Method) string {
+	messageName := method.Input().Name().UpperCamelCase().String()
+	if method.Input().Package() == method.Package() {
+		return messageName
+	}
+	return fn.PackageName(method.Input()).String() + "." + messageName
+}
+
+func (fn Func) GolangOutputMessageName(method pgs.Method) string {
+	messageName := method.Output().Name().UpperCamelCase().String()
+	if method.Output().Package() == method.Package() {
+		return messageName
+	}
+	return fn.PackageName(method.Output()).String() + "." + messageName
+}
+
+func (fn Func) GolangImports(file pgs.File) []string {
+	imps := make(map[pgs.FilePath]int)
+	for _, service := range file.Services() {
+		for _, method := range service.Methods() {
+			imps[fn.ImportPath(method.Input())]++
+			imps[fn.ImportPath(method.Output())]++
+		}
+	}
+	files := make([]string, 0, len(imps))
+	for file := range imps {
+		if file == "." {
+			continue
+		}
+		files = append(files, string(file))
+	}
+	sort.Strings(files)
+	return files
 }

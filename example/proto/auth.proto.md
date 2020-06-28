@@ -123,30 +123,27 @@
 
 
 
-* Response Type: ***Response***
+* Response Type: ***Empty***
 
+>  A generic empty message that you can re-use to avoid defining duplicated
+>  empty messages in your APIs. A typical example is to use it as the request
+>  or the response type of an API method. For instance:
 > 
+>      service Foo {
+>        rpc Bar(google.protobuf.Empty) returns (google.protobuf.Empty);
+>      }
+> 
+>  The JSON representation for `Empty` is empty JSON object `{}`.
 
 |Field|proto type|JSON type|Comment|Default|Required|
 |---|---|---|---|---|---|
-|embed|[Embed](#embed)|object| embed message|-|false|
-|name0|string (oneof test_oneof)|string| test oneof name 0|-|false|
-|name1|string (oneof test_oneof)|string| test oneof name 1|-|false|
-|name2|string (oneof test_oneof)|string| test oneof name 2|-|false|
 
 
 
 > JSON Demo
 
 ```json
-{
-  "embed": {
-    "id": 0
-  },
-  "name0": "string",
-  "name1": "string",
-  "name2": "string"
-}
+{}
 ```
 
 

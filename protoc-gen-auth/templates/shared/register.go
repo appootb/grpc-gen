@@ -13,9 +13,13 @@ func Register(tpl *template.Template, params pgs.Parameters) {
 	}
 
 	tpl.Funcs(map[string]interface{}{
-		"pkg":    fn.PackageName,
-		"scope":  fn.Scope,
-		"hasGw":  fn.GatewayDefined,
-		"access": fn.Access,
+		"pkg":           fn.PackageName,
+		"imports":       fn.GolangImports,
+		"scope":         fn.Scope,
+		"hasGw":         fn.GatewayDefined,
+		"access":        fn.Access,
+		"goInput":       fn.GolangInputMessageName,
+		"goOutput":      fn.GolangOutputMessageName,
+		"wrapperStream": fn.IsServerStreaming,
 	})
 }

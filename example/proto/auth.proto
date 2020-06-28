@@ -5,6 +5,7 @@ package example;
 import "appootb/permission/method.proto";
 import "appootb/permission/service.proto";
 import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
 
 enum RequestType {
     _NONE = 0;
@@ -69,7 +70,7 @@ service Example_b {
     };
 
     // test2 comment
-    rpc test2 (Request) returns (Response) {
+    rpc test2 (Request) returns (google.protobuf.Empty) {
         option (appootb.permission.method.token) = {
             required: MIDDLE_TOKEN
         };

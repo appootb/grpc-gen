@@ -3,11 +3,17 @@
 package example
 
 import (
+	"context"
+
 	"github.com/appootb/protobuf/go/permission"
 	"github.com/appootb/protobuf/go/service"
+	"github.com/golang/protobuf/ptypes/empty"
+	"google.golang.org/grpc"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
+var _ = context.TODO()
+var _ = grpc.ServiceDesc{}
 var _ = permission.TokenLevel_NONE_TOKEN
 var _ = service.UnaryServerInterceptor
 
@@ -21,9 +27,10 @@ func RegisterExampleScopeServer(auth service.Authenticator, impl service.Impleme
 	auth.RegisterServiceTokenLevel(_levelExample)
 
 	// Register scoped gRPC server.
-	for _, grpc := range impl.GetScopedGRPCServer(permission.VisibleScope_DEFAULT_SCOPE) {
-		RegisterExampleServer(grpc, srv)
-	} // No gateway generated.
+	for _, gRPC := range impl.GetScopedGRPCServer(permission.VisibleScope_DEFAULT_SCOPE) {
+		RegisterExampleServer(gRPC, srv)
+	}
+	// No gateway generated.
 	return nil
 }
 
@@ -32,21 +39,67 @@ var _levelExampleB = map[string]permission.TokenLevel{
 	"/example.Example_b/TestA": permission.TokenLevel_INNER_TOKEN,
 }
 
+type wrapperExampleBServer struct {
+	ExampleBServer
+	service.Implementor
+}
+
+func (w *wrapperExampleBServer) Test2(ctx context.Context, req *Request) (*empty.Empty, error) {
+	if w.UnaryServerInterceptor() == nil {
+		return w.ExampleBServer.Test2(ctx, req)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     w.ExampleBServer,
+		FullMethod: "/example.Example_b/Test2",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return w.ExampleBServer.Test2(ctx, req.(*Request))
+	}
+	resp, err := w.UnaryServerInterceptor()(ctx, req, info, handler)
+	if err != nil {
+		return nil, err
+	}
+	return resp.(*empty.Empty), nil
+}
+
+func (w *wrapperExampleBServer) TestA(ctx context.Context, req *Request) (*Response, error) {
+	if w.UnaryServerInterceptor() == nil {
+		return w.ExampleBServer.TestA(ctx, req)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     w.ExampleBServer,
+		FullMethod: "/example.Example_b/TestA",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return w.ExampleBServer.TestA(ctx, req.(*Request))
+	}
+	resp, err := w.UnaryServerInterceptor()(ctx, req, info, handler)
+	if err != nil {
+		return nil, err
+	}
+	return resp.(*Response), nil
+}
+
 // Register scoped server.
 func RegisterExampleBScopeServer(auth service.Authenticator, impl service.Implementor, srv ExampleBServer) error {
 	// Register service required token level.
 	auth.RegisterServiceTokenLevel(_levelExampleB)
 
 	// Register scoped gRPC server.
-	for _, grpc := range impl.GetScopedGRPCServer(permission.VisibleScope_ALL_SCOPES) {
-		RegisterExampleBServer(grpc, srv)
+	for _, gRPC := range impl.GetScopedGRPCServer(permission.VisibleScope_ALL_SCOPES) {
+		RegisterExampleBServer(gRPC, srv)
 	}
 	// Register scoped gateway handler server.
+	wrapper := wrapperExampleBServer{
+		ExampleBServer: srv,
+		Implementor:    impl,
+	}
 	for _, mux := range impl.GetScopedGatewayMux(permission.VisibleScope_ALL_SCOPES) {
-		err := RegisterExampleBHandlerServer(impl.Context(), mux, srv)
+		err := RegisterExampleBHandlerServer(impl.Context(), mux, &wrapper)
 		if err != nil {
 			return err
 		}
 	}
+
 	return nil
 }
