@@ -50,30 +50,23 @@ message Response {
 // > markdown test
 service example {
     // service scope
-    option (appootb.permission.service.visible) = {
-        scope: DEFAULT_SCOPE
-    };
+    option (appootb.permission.service.visible) = CLIENT;
 
     // test1 comment
     rpc test1 (Request) returns (Response) {
-        option (appootb.permission.method.token) = {
-            required: LOW_TOKEN
-        };
+        option (appootb.permission.method.token) = SERVER;
     }
 }
 
 // Example2 Service.
 service Example_b {
     // service scope
-    option (appootb.permission.service.visible) = {
-        scope: ALL_SCOPES
-    };
+    option (appootb.permission.service.visible) = SERVER;
 
     // test2 comment
     rpc test2 (Request) returns (google.protobuf.Empty) {
-        option (appootb.permission.method.token) = {
-            required: MIDDLE_TOKEN
-        };
+        option (appootb.permission.method.token) = PC;
+
         option (google.api.http) = {
             post: "/example/test"
             body: "*"
@@ -82,8 +75,6 @@ service Example_b {
 
     // test3 interface
     rpc Test_a (Request) returns (Response) {
-        option (appootb.permission.method.token) = {
-            required: INNER_TOKEN
-        };
+        option (appootb.permission.method.token) = WEB;
     }
 }

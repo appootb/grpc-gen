@@ -3,7 +3,7 @@ module github.com/appootb/grpc-gen
 go 1.14
 
 require (
-	github.com/appootb/protobuf/go v0.0.0-20200620150617-abbc20f400b9
+	github.com/appootb/protobuf/go v0.0.0-20200703044213-66316159109b
 	github.com/golang/protobuf v1.4.2
 	github.com/grpc-ecosystem/grpc-gateway v1.14.6 // indirect
 	github.com/lyft/protoc-gen-star v0.4.15

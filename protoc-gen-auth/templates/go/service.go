@@ -1,9 +1,13 @@
 package golang
 
 const serviceTpl = `
-	var _level{{ .Name.UpperCamelCase }} = map[string]permission.TokenLevel{
-		{{- range $k, $v := (access .) }}
-		"{{ $k }}": permission.TokenLevel_{{ $v }},
+	var _level{{ .Name.UpperCamelCase }} = map[string][]permission.Audience{
+		{{- range $url, $auds := (access .) }}
+		"{{ $url }}": {
+			{{- range $aud := $auds }}
+			permission.Audience_{{ $aud }},
+			{{- end }}
+		},
 		{{- end }}
 	}
 

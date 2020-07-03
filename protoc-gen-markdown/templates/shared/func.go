@@ -349,7 +349,7 @@ func (fn Func) GatewayURL(method pgs.Method) string {
 
 	for _, desc := range descs {
 		// 72295728 gRPC gateway
-		if desc.Field == 72295728 {
+		if desc.TypeDescriptor().Number() == 72295728 {
 			ext, _ := proto.GetExtension(opts, desc)
 			if rule, ok := ext.(*annotations.HttpRule); ok {
 				switch p := rule.Pattern.(type) {
@@ -387,7 +387,7 @@ func (fn Func) GatewayDoc(method pgs.Method) *GatewayDoc {
 
 	for _, desc := range descs {
 		// 72295728 gRPC gateway
-		if desc.Field == 72295728 {
+		if desc.TypeDescriptor().Number() == 72295728 {
 			ext, _ := proto.GetExtension(opts, desc)
 			if rule, ok := ext.(*annotations.HttpRule); ok {
 				doc := &GatewayDoc{

@@ -15,28 +15,59 @@ type Func struct {
 	pgsgo.Context
 }
 
-func (fn Func) Access(svc pgs.Service) map[string]permission.TokenLevel {
-	out := make(map[string]permission.TokenLevel)
-	defaultTokenLevel := permission.TokenLevel_NONE_TOKEN
-	if fn.Scope(svc) == permission.VisibleScope_INNER_SCOPE {
-		defaultTokenLevel = permission.TokenLevel_INNER_TOKEN
+func (fn Func) Access(svc pgs.Service) map[string][]permission.Audience {
+	out := make(map[string][]permission.Audience)
+	defaultAudience := permission.Audience_NONE
+	if fn.Scope(svc) == permission.VisibleScope_SERVER {
+		defaultAudience = permission.Audience_SERVER
 	}
 
 	for _, method := range svc.Methods() {
 		fullPath := fmt.Sprintf("/%s.%s/%s", svc.Package().ProtoName(), svc.Name(), method.Name().UpperCamelCase())
-		out[fullPath] = defaultTokenLevel
+		if defaultAudience == permission.Audience_SERVER {
+			// Ignore method option within server scope.
+			out[fullPath] = append(out[fullPath], defaultAudience)
+			continue
+		}
 
+		audiences := map[permission.Audience]int{}
 		opts := method.Descriptor().GetOptions()
 		descs, _ := proto.ExtensionDescs(opts)
 
 		for _, desc := range descs {
-			if desc.Field == 2507 {
+			if desc.TypeDescriptor().Number() == 2507 {
 				ext, _ := proto.GetExtension(opts, desc)
-				if access, ok := ext.(*permission.Token); ok {
-					out[fullPath] = access.Required
-					break
+				if auds, ok := ext.([]permission.Audience); ok {
+					for _, aud := range auds {
+						switch aud {
+						case permission.Audience_LOGGED_IN:
+							audiences[permission.Audience_WEB]++
+							audiences[permission.Audience_PC]++
+							audiences[permission.Audience_MOBILE]++
+						case permission.Audience_CLIENT:
+							audiences[permission.Audience_GUEST]++
+							audiences[permission.Audience_WEB]++
+							audiences[permission.Audience_PC]++
+							audiences[permission.Audience_MOBILE]++
+						case permission.Audience_ANY:
+							audiences[permission.Audience_GUEST]++
+							audiences[permission.Audience_WEB]++
+							audiences[permission.Audience_PC]++
+							audiences[permission.Audience_MOBILE]++
+							audiences[permission.Audience_SERVER]++
+						default:
+							audiences[aud]++
+						}
+					}
 				}
 			}
+		}
+
+		if len(audiences) == 0 {
+			audiences[defaultAudience]++
+		}
+		for aud := range audiences {
+			out[fullPath] = append(out[fullPath], aud)
 		}
 	}
 
@@ -48,15 +79,15 @@ func (fn Func) Scope(svc pgs.Service) permission.VisibleScope {
 	descs, _ := proto.ExtensionDescs(opts)
 
 	for _, desc := range descs {
-		if desc.Field == 1507 {
+		if desc.TypeDescriptor().Number() == 1507 {
 			ext, _ := proto.GetExtension(opts, desc)
-			if visible, ok := ext.(*permission.ServiceVisible); ok {
-				return visible.Scope
+			if scope, ok := ext.(*permission.VisibleScope); ok {
+				return *scope
 			}
 		}
 	}
 
-	return permission.VisibleScope_DEFAULT_SCOPE
+	return permission.VisibleScope_CLIENT
 }
 
 func (fn Func) GatewayDefined(svc pgs.Service) bool {
@@ -65,7 +96,7 @@ func (fn Func) GatewayDefined(svc pgs.Service) bool {
 		descs, _ := proto.ExtensionDescs(opts)
 
 		for _, desc := range descs {
-			if desc.Field == 72295728 {
+			if desc.TypeDescriptor().Number() == 72295728 {
 				ext, _ := proto.GetExtension(opts, desc)
 				if _, ok := ext.(*annotations.HttpRule); ok {
 					return true

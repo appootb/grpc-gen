@@ -14,11 +14,13 @@ import (
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = context.TODO()
 var _ = grpc.ServiceDesc{}
-var _ = permission.TokenLevel_NONE_TOKEN
+var _ = permission.Audience_NONE
 var _ = service.UnaryServerInterceptor
 
-var _levelExample = map[string]permission.TokenLevel{
-	"/example.example/Test1": permission.TokenLevel_LOW_TOKEN,
+var _levelExample = map[string][]permission.Audience{
+	"/example.example/Test1": {
+		permission.Audience_SERVER,
+	},
 }
 
 // Register scoped server.
@@ -27,16 +29,20 @@ func RegisterExampleScopeServer(auth service.Authenticator, impl service.Impleme
 	auth.RegisterServiceTokenLevel(_levelExample)
 
 	// Register scoped gRPC server.
-	for _, gRPC := range impl.GetScopedGRPCServer(permission.VisibleScope_DEFAULT_SCOPE) {
+	for _, gRPC := range impl.GetScopedGRPCServer(permission.VisibleScope_CLIENT) {
 		RegisterExampleServer(gRPC, srv)
 	}
 	// No gateway generated.
 	return nil
 }
 
-var _levelExampleB = map[string]permission.TokenLevel{
-	"/example.Example_b/Test2": permission.TokenLevel_MIDDLE_TOKEN,
-	"/example.Example_b/TestA": permission.TokenLevel_INNER_TOKEN,
+var _levelExampleB = map[string][]permission.Audience{
+	"/example.Example_b/Test2": {
+		permission.Audience_SERVER,
+	},
+	"/example.Example_b/TestA": {
+		permission.Audience_SERVER,
+	},
 }
 
 type wrapperExampleBServer struct {
@@ -86,7 +92,7 @@ func RegisterExampleBScopeServer(auth service.Authenticator, impl service.Implem
 	auth.RegisterServiceTokenLevel(_levelExampleB)
 
 	// Register scoped gRPC server.
-	for _, gRPC := range impl.GetScopedGRPCServer(permission.VisibleScope_ALL_SCOPES) {
+	for _, gRPC := range impl.GetScopedGRPCServer(permission.VisibleScope_SERVER) {
 		RegisterExampleBServer(gRPC, srv)
 	}
 	// Register scoped gateway handler server.
@@ -94,7 +100,7 @@ func RegisterExampleBScopeServer(auth service.Authenticator, impl service.Implem
 		ExampleBServer: srv,
 		Implementor:    impl,
 	}
-	for _, mux := range impl.GetScopedGatewayMux(permission.VisibleScope_ALL_SCOPES) {
+	for _, mux := range impl.GetScopedGatewayMux(permission.VisibleScope_SERVER) {
 		err := RegisterExampleBHandlerServer(impl.Context(), mux, &wrapper)
 		if err != nil {
 			return err
