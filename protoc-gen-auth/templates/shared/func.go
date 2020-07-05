@@ -15,46 +15,46 @@ type Func struct {
 	pgsgo.Context
 }
 
-func (fn Func) Access(svc pgs.Service) map[string][]permission.Audience {
-	out := make(map[string][]permission.Audience)
-	defaultAudience := permission.Audience_NONE
+func (fn Func) Access(svc pgs.Service) map[string][]permission.Subject {
+	out := make(map[string][]permission.Subject)
+	defaultAudience := permission.Subject_NONE
 	if fn.Scope(svc) == permission.VisibleScope_SERVER {
-		defaultAudience = permission.Audience_SERVER
+		defaultAudience = permission.Subject_SERVER
 	}
 
 	for _, method := range svc.Methods() {
 		fullPath := fmt.Sprintf("/%s.%s/%s", svc.Package().ProtoName(), svc.Name(), method.Name().UpperCamelCase())
-		if defaultAudience == permission.Audience_SERVER {
+		if defaultAudience == permission.Subject_SERVER {
 			// Ignore method option within server scope.
 			out[fullPath] = append(out[fullPath], defaultAudience)
 			continue
 		}
 
-		audiences := map[permission.Audience]int{}
+		audiences := map[permission.Subject]int{}
 		opts := method.Descriptor().GetOptions()
 		descs, _ := proto.ExtensionDescs(opts)
 
 		for _, desc := range descs {
 			if desc.TypeDescriptor().Number() == 2507 {
 				ext, _ := proto.GetExtension(opts, desc)
-				if auds, ok := ext.([]permission.Audience); ok {
+				if auds, ok := ext.([]permission.Subject); ok {
 					for _, aud := range auds {
 						switch aud {
-						case permission.Audience_LOGGED_IN:
-							audiences[permission.Audience_WEB]++
-							audiences[permission.Audience_PC]++
-							audiences[permission.Audience_MOBILE]++
-						case permission.Audience_CLIENT:
-							audiences[permission.Audience_GUEST]++
-							audiences[permission.Audience_WEB]++
-							audiences[permission.Audience_PC]++
-							audiences[permission.Audience_MOBILE]++
-						case permission.Audience_ANY:
-							audiences[permission.Audience_GUEST]++
-							audiences[permission.Audience_WEB]++
-							audiences[permission.Audience_PC]++
-							audiences[permission.Audience_MOBILE]++
-							audiences[permission.Audience_SERVER]++
+						case permission.Subject_LOGGED_IN:
+							audiences[permission.Subject_WEB]++
+							audiences[permission.Subject_PC]++
+							audiences[permission.Subject_MOBILE]++
+						case permission.Subject_CLIENT:
+							audiences[permission.Subject_GUEST]++
+							audiences[permission.Subject_WEB]++
+							audiences[permission.Subject_PC]++
+							audiences[permission.Subject_MOBILE]++
+						case permission.Subject_ANY:
+							audiences[permission.Subject_GUEST]++
+							audiences[permission.Subject_WEB]++
+							audiences[permission.Subject_PC]++
+							audiences[permission.Subject_MOBILE]++
+							audiences[permission.Subject_SERVER]++
 						default:
 							audiences[aud]++
 						}

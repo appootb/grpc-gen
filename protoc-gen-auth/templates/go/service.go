@@ -1,11 +1,11 @@
 package golang
 
 const serviceTpl = `
-	var _level{{ .Name.UpperCamelCase }} = map[string][]permission.Audience{
-		{{- range $url, $auds := (access .) }}
+	var _{{ .Name.LowerCamelCase }}ServiceSubjects = map[string][]permission.Subject{
+		{{- range $url, $subs := (access .) }}
 		"{{ $url }}": {
-			{{- range $aud := $auds }}
-			permission.Audience_{{ $aud }},
+			{{- range $sub := $subs }}
+			permission.Subject_{{ $sub }},
 			{{- end }}
 		},
 		{{- end }}
@@ -23,11 +23,11 @@ const serviceTpl = `
 
 	// Register scoped server.
 	func Register{{ .Name.UpperCamelCase }}ScopeServer(auth service.Authenticator, impl service.Implementor, srv {{ .Name.UpperCamelCase }}Server) error {
-		// Register service required token level.
-		auth.RegisterServiceTokenLevel(_level{{ .Name.UpperCamelCase }})
+		// Register service required subjects.
+		auth.RegisterServiceSubjects(_{{ .Name.LowerCamelCase }}ServiceSubjects)
 
 		// Register scoped gRPC server.
-		for _, gRPC := range impl.GetScopedGRPCServer(permission.VisibleScope_{{ (scope .) }}) {
+		for _, gRPC := range impl.GetGRPCServer(permission.VisibleScope_{{ (scope .) }}) {
 			Register{{ .Name.UpperCamelCase }}Server(gRPC, srv)
 		}
 
@@ -37,7 +37,7 @@ const serviceTpl = `
 			{{ .Name.UpperCamelCase }}Server: srv,
 			Implementor: impl,
 		}
-		for _, mux := range impl.GetScopedGatewayMux(permission.VisibleScope_{{ (scope .) }}) {
+		for _, mux := range impl.GetGatewayMux(permission.VisibleScope_{{ (scope .) }}) {
 			err := Register{{ .Name.UpperCamelCase }}HandlerServer(impl.Context(), mux, &wrapper)
 			if err != nil {
 				return err
