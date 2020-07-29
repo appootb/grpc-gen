@@ -155,6 +155,12 @@
 
 
 
+* HTTP Gateway
+
+	* URL: /example/stream
+	* Method: WEBSOCKET
+	* Content-Type: TextFrame
+
 * Request Type: ***Request***
 
 >  Message Request type
@@ -170,6 +176,24 @@
 
 
 
+> JSON Demo
+
+```json
+{
+  "id": 0,
+  "name": "string",
+  "type": "_NONE (0) | TYPE1 (1) | TYPE2 (2)",
+  "array": [
+    "string"
+  ],
+  "map": {
+    "string": "_NONE (0) | TYPE1 (1) | TYPE2 (2)"
+  }
+}
+```
+
+
+
 * Response Type: ***Response***
 
 > 
@@ -182,6 +206,19 @@
 |name2|string (oneof test_oneof)|string| test oneof name 2|-|false|
 
 
+
+> JSON Demo
+
+```json
+{
+  "embed": {
+    "id": 0
+  },
+  "name0": "string",
+  "name1": "string",
+  "name2": "string"
+}
+```
 
 
 

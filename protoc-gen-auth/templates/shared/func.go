@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"sort"
 
+	"github.com/appootb/protobuf/go/api"
 	"github.com/appootb/protobuf/go/permission"
 	"github.com/golang/protobuf/proto"
+	"github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway/httprule"
 	pgs "github.com/lyft/protoc-gen-star"
 	pgsgo "github.com/lyft/protoc-gen-star/lang/go"
 	"google.golang.org/genproto/googleapis/api/annotations"
@@ -15,46 +17,46 @@ type Func struct {
 	pgsgo.Context
 }
 
-func (fn Func) Access(svc pgs.Service) map[string][]permission.Audience {
-	out := make(map[string][]permission.Audience)
-	defaultAudience := permission.Audience_NONE
+func (fn Func) Access(svc pgs.Service) map[string]Subjects {
+	out := make(map[string]Subjects)
+	defaultAudience := permission.Subject_NONE
 	if fn.Scope(svc) == permission.VisibleScope_SERVER {
-		defaultAudience = permission.Audience_SERVER
+		defaultAudience = permission.Subject_SERVER
 	}
 
 	for _, method := range svc.Methods() {
 		fullPath := fmt.Sprintf("/%s.%s/%s", svc.Package().ProtoName(), svc.Name(), method.Name().UpperCamelCase())
-		if defaultAudience == permission.Audience_SERVER {
+		if defaultAudience == permission.Subject_SERVER {
 			// Ignore method option within server scope.
 			out[fullPath] = append(out[fullPath], defaultAudience)
 			continue
 		}
 
-		audiences := map[permission.Audience]int{}
+		audiences := map[permission.Subject]int{}
 		opts := method.Descriptor().GetOptions()
 		descs, _ := proto.ExtensionDescs(opts)
 
 		for _, desc := range descs {
 			if desc.TypeDescriptor().Number() == 2507 {
 				ext, _ := proto.GetExtension(opts, desc)
-				if auds, ok := ext.([]permission.Audience); ok {
+				if auds, ok := ext.([]permission.Subject); ok {
 					for _, aud := range auds {
 						switch aud {
-						case permission.Audience_LOGGED_IN:
-							audiences[permission.Audience_WEB]++
-							audiences[permission.Audience_PC]++
-							audiences[permission.Audience_MOBILE]++
-						case permission.Audience_CLIENT:
-							audiences[permission.Audience_GUEST]++
-							audiences[permission.Audience_WEB]++
-							audiences[permission.Audience_PC]++
-							audiences[permission.Audience_MOBILE]++
-						case permission.Audience_ANY:
-							audiences[permission.Audience_GUEST]++
-							audiences[permission.Audience_WEB]++
-							audiences[permission.Audience_PC]++
-							audiences[permission.Audience_MOBILE]++
-							audiences[permission.Audience_SERVER]++
+						case permission.Subject_LOGGED_IN:
+							audiences[permission.Subject_WEB]++
+							audiences[permission.Subject_PC]++
+							audiences[permission.Subject_MOBILE]++
+						case permission.Subject_CLIENT:
+							audiences[permission.Subject_GUEST]++
+							audiences[permission.Subject_WEB]++
+							audiences[permission.Subject_PC]++
+							audiences[permission.Subject_MOBILE]++
+						case permission.Subject_ANY:
+							audiences[permission.Subject_GUEST]++
+							audiences[permission.Subject_WEB]++
+							audiences[permission.Subject_PC]++
+							audiences[permission.Subject_MOBILE]++
+							audiences[permission.Subject_SERVER]++
 						default:
 							audiences[aud]++
 						}
@@ -69,6 +71,7 @@ func (fn Func) Access(svc pgs.Service) map[string][]permission.Audience {
 		for aud := range audiences {
 			out[fullPath] = append(out[fullPath], aud)
 		}
+		sort.Sort(out[fullPath])
 	}
 
 	return out
@@ -108,8 +111,49 @@ func (fn Func) GatewayDefined(svc pgs.Service) bool {
 	return false
 }
 
-func (fn Func) IsServerStreaming(method pgs.Method) bool {
-	return method.ServerStreaming() && !method.ClientStreaming()
+func (fn Func) WebsocketURLPattern(svc pgs.Service) map[string]httprule.Template {
+	patterns := make(map[string]httprule.Template)
+	for _, method := range svc.Methods() {
+		key := fmt.Sprintf("ws_pattern_%s_%s_0", svc.Name(), method.Name().UpperCamelCase())
+		opts := method.Descriptor().GetOptions()
+		descs, _ := proto.ExtensionDescs(opts)
+		for _, desc := range descs {
+			if desc.TypeDescriptor().Number() == 3507 {
+				ext, _ := proto.GetExtension(opts, desc)
+				if rule, ok := ext.(*api.WebsocketRule); ok {
+					c, err := httprule.Parse(rule.Url)
+					if err != nil {
+						continue
+					}
+					patterns[key] = c.Compile()
+				}
+			}
+		}
+	}
+	return patterns
+}
+
+func (fn Func) WebsocketDefined(svc pgs.Service) bool {
+	for _, method := range svc.Methods() {
+		if fn.IsWebsocket(method) {
+			return true
+		}
+	}
+	return false
+}
+
+func (fn Func) IsWebsocket(method pgs.Method) bool {
+	opts := method.Descriptor().GetOptions()
+	descs, _ := proto.ExtensionDescs(opts)
+	for _, desc := range descs {
+		if desc.TypeDescriptor().Number() == 3507 {
+			ext, _ := proto.GetExtension(opts, desc)
+			if _, ok := ext.(*api.WebsocketRule); ok {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func (fn Func) GolangInputMessageName(method pgs.Method) string {

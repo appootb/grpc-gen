@@ -2,6 +2,7 @@ syntax = "proto2";
 
 package example;
 
+import "appootb/api/websocket.proto";
 import "appootb/permission/method.proto";
 import "appootb/permission/service.proto";
 import "google/api/annotations.proto";
@@ -54,7 +55,7 @@ service example {
 
     // test1 comment
     rpc test1 (Request) returns (Response) {
-        option (appootb.permission.method.token) = SERVER;
+        option (appootb.permission.method.required) = SERVER;
     }
 }
 
@@ -65,7 +66,7 @@ service Example_b {
 
     // test2 comment
     rpc test2 (Request) returns (google.protobuf.Empty) {
-        option (appootb.permission.method.token) = PC;
+        option (appootb.permission.method.required) = PC;
 
         option (google.api.http) = {
             post: "/example/test"
@@ -74,7 +75,10 @@ service Example_b {
     }
 
     // test3 interface
-    rpc Test_a (Request) returns (Response) {
-        option (appootb.permission.method.token) = WEB;
+    rpc Test_a (stream Request) returns (Response) {
+        option (appootb.permission.method.required) = WEB;
+        option (appootb.api.websocket) = {
+            url: "/example/stream"
+        };
     }
 }

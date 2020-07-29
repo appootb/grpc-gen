@@ -4,44 +4,52 @@ package example
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/appootb/protobuf/go/permission"
 	"github.com/appootb/protobuf/go/service"
+	"github.com/appootb/protobuf/go/webstream"
 	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"golang.org/x/net/websocket"
 	"google.golang.org/grpc"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
+var _ = http.StatusOK
+var _ = runtime.String
 var _ = context.TODO()
 var _ = grpc.ServiceDesc{}
-var _ = permission.Audience_NONE
+var _ = webstream.WebStream{}
+var _ = websocket.UnknownFrame
+var _ = permission.Subject_NONE
 var _ = service.UnaryServerInterceptor
 
-var _levelExample = map[string][]permission.Audience{
+var _exampleServiceSubjects = map[string][]permission.Subject{
 	"/example.example/Test1": {
-		permission.Audience_SERVER,
+		permission.Subject_SERVER,
 	},
 }
 
 // Register scoped server.
-func RegisterExampleScopeServer(auth service.Authenticator, impl service.Implementor, srv ExampleServer) error {
-	// Register service required token level.
-	auth.RegisterServiceTokenLevel(_levelExample)
+func RegisterExampleScopeServer(component string, auth service.Authenticator, impl service.Implementor, srv ExampleServer) error {
+	// Register service required subjects.
+	auth.RegisterServiceSubjects(component, _exampleServiceSubjects)
 
 	// Register scoped gRPC server.
-	for _, gRPC := range impl.GetScopedGRPCServer(permission.VisibleScope_CLIENT) {
+	for _, gRPC := range impl.GetGRPCServer(permission.VisibleScope_CLIENT) {
 		RegisterExampleServer(gRPC, srv)
 	}
 	// No gateway generated.
 	return nil
 }
 
-var _levelExampleB = map[string][]permission.Audience{
+var _exampleBServiceSubjects = map[string][]permission.Subject{
 	"/example.Example_b/Test2": {
-		permission.Audience_SERVER,
+		permission.Subject_SERVER,
 	},
 	"/example.Example_b/TestA": {
-		permission.Audience_SERVER,
+		permission.Subject_SERVER,
 	},
 }
 
@@ -51,7 +59,7 @@ type wrapperExampleBServer struct {
 }
 
 func (w *wrapperExampleBServer) Test2(ctx context.Context, req *Request) (*empty.Empty, error) {
-	if w.UnaryServerInterceptor() == nil {
+	if w.UnaryInterceptor() == nil {
 		return w.ExampleBServer.Test2(ctx, req)
 	}
 	info := &grpc.UnaryServerInfo{
@@ -61,38 +69,24 @@ func (w *wrapperExampleBServer) Test2(ctx context.Context, req *Request) (*empty
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return w.ExampleBServer.Test2(ctx, req.(*Request))
 	}
-	resp, err := w.UnaryServerInterceptor()(ctx, req, info, handler)
+	resp, err := w.UnaryInterceptor()(ctx, req, info, handler)
 	if err != nil {
 		return nil, err
 	}
 	return resp.(*empty.Empty), nil
 }
 
-func (w *wrapperExampleBServer) TestA(ctx context.Context, req *Request) (*Response, error) {
-	if w.UnaryServerInterceptor() == nil {
-		return w.ExampleBServer.TestA(ctx, req)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     w.ExampleBServer,
-		FullMethod: "/example.Example_b/TestA",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return w.ExampleBServer.TestA(ctx, req.(*Request))
-	}
-	resp, err := w.UnaryServerInterceptor()(ctx, req, info, handler)
-	if err != nil {
-		return nil, err
-	}
-	return resp.(*Response), nil
+func (w *wrapperExampleBServer) TestA(srv ExampleB_TestAServer) error {
+	return w.ExampleBServer.TestA(srv)
 }
 
 // Register scoped server.
-func RegisterExampleBScopeServer(auth service.Authenticator, impl service.Implementor, srv ExampleBServer) error {
-	// Register service required token level.
-	auth.RegisterServiceTokenLevel(_levelExampleB)
+func RegisterExampleBScopeServer(component string, auth service.Authenticator, impl service.Implementor, srv ExampleBServer) error {
+	// Register service required subjects.
+	auth.RegisterServiceSubjects(component, _exampleBServiceSubjects)
 
 	// Register scoped gRPC server.
-	for _, gRPC := range impl.GetScopedGRPCServer(permission.VisibleScope_SERVER) {
+	for _, gRPC := range impl.GetGRPCServer(permission.VisibleScope_SERVER) {
 		RegisterExampleBServer(gRPC, srv)
 	}
 	// Register scoped gateway handler server.
@@ -100,12 +94,56 @@ func RegisterExampleBScopeServer(auth service.Authenticator, impl service.Implem
 		ExampleBServer: srv,
 		Implementor:    impl,
 	}
-	for _, mux := range impl.GetScopedGatewayMux(permission.VisibleScope_SERVER) {
-		err := RegisterExampleBHandlerServer(impl.Context(), mux, &wrapper)
-		if err != nil {
+	for _, mux := range impl.GetGatewayMux(permission.VisibleScope_SERVER) {
+		// Register gateway handler.
+		if err := RegisterExampleBHandlerServer(impl.Context(), mux, &wrapper); err != nil {
+			return err
+		}
+		// Register websocket handler.
+		if err := RegisterExampleBWsHandlerServer(mux, srv, impl.StreamInterceptor()); err != nil {
 			return err
 		}
 	}
 
 	return nil
 }
+
+func RegisterExampleBWsHandlerServer(mux *runtime.ServeMux, srv ExampleBServer, streamInterceptor grpc.StreamServerInterceptor) error {
+
+	mux.Handle("GET", ws_pattern_Example_b_TestA_0, func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
+		fn := func(c *websocket.Conn) {
+			ctx, err := runtime.AnnotateIncomingContext(r.Context(), mux, r)
+			if err != nil {
+				_ = c.WriteClose(http.StatusBadRequest)
+				return
+			}
+			inbound, outbound := runtime.MarshalerForRequest(mux, r)
+			stream := webstream.NewWebsocketStream(ctx, c, inbound, outbound)
+			if streamInterceptor == nil {
+				err := srv.TestA(&exampleBTestAServer{stream})
+				if err != nil {
+					_ = c.WriteClose(http.StatusInternalServerError)
+				}
+				return
+			}
+			handler := func(_ interface{}, stream grpc.ServerStream) error {
+				return srv.TestA(&exampleBTestAServer{stream})
+			}
+			info := &grpc.StreamServerInfo{
+				FullMethod:     "/example.Example_b/TestA",
+				IsClientStream: true,
+				IsServerStream: false,
+			}
+			if err := streamInterceptor(srv, stream, info, handler); err != nil {
+				_ = c.WriteClose(http.StatusInternalServerError)
+			}
+		}
+		websocket.Handler(fn).ServeHTTP(w, r)
+	})
+
+	return nil
+}
+
+var (
+	ws_pattern_Example_b_TestA_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"example", "stream"}, "", runtime.AssumeColonVerbOpt(true)))
+)

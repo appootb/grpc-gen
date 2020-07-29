@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/appootb/protobuf/go/api"
 	"github.com/golang/protobuf/proto"
 	pgs "github.com/lyft/protoc-gen-star"
 	pgsgo "github.com/lyft/protoc-gen-star/lang/go"
@@ -385,29 +386,45 @@ func (fn Func) GatewayDoc(method pgs.Method) *GatewayDoc {
 	opts := method.Descriptor().GetOptions()
 	descs, _ := proto.ExtensionDescs(opts)
 
+	// Websocket
+	for _, desc := range descs {
+		if desc.TypeDescriptor().Number() == 3507 {
+			ext, _ := proto.GetExtension(opts, desc)
+			if rule, ok := ext.(*api.WebsocketRule); ok {
+				return &GatewayDoc{
+					URL:          rule.Url,
+					Method:       "WEBSOCKET",
+					ContentType:  "TextFrame",
+					JsonRequired: true,
+				}
+			}
+		}
+	}
+	// HTTP
 	for _, desc := range descs {
 		// 72295728 gRPC gateway
 		if desc.TypeDescriptor().Number() == 72295728 {
 			ext, _ := proto.GetExtension(opts, desc)
 			if rule, ok := ext.(*annotations.HttpRule); ok {
 				doc := &GatewayDoc{
-					ContentType: "`application/json`",
+					ContentType:  "`application/json`",
+					JsonRequired: true,
 				}
 				switch p := rule.Pattern.(type) {
 				case *annotations.HttpRule_Get:
 					doc.Method = fmt.Sprintf("`%s`", http.MethodGet)
 					doc.URL = fmt.Sprintf("`%s`", p.Get)
+					doc.JsonRequired = false
 				case *annotations.HttpRule_Put:
 					doc.Method = fmt.Sprintf("`%s`", http.MethodPut)
 					doc.URL = fmt.Sprintf("`%s`", p.Put)
-					doc.JsonRequired = true
 				case *annotations.HttpRule_Post:
 					doc.Method = fmt.Sprintf("`%s`", http.MethodPost)
 					doc.URL = fmt.Sprintf("`%s`", p.Post)
-					doc.JsonRequired = true
 				case *annotations.HttpRule_Delete:
 					doc.Method = fmt.Sprintf("`%s`", http.MethodDelete)
 					doc.URL = fmt.Sprintf("`%s`", p.Delete)
+					doc.JsonRequired = false
 				case *annotations.HttpRule_Patch:
 					doc.Method = fmt.Sprintf("`%s`", http.MethodPatch)
 					doc.URL = fmt.Sprintf("`%s`", p.Patch)
