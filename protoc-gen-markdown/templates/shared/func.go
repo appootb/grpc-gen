@@ -280,6 +280,9 @@ func (fn Func) EmbedFields(field pgs.Field, enumDoc map[string]interface{}, msgD
 				}
 			} else if value.IsEmbed() {
 				name := value.Embed().FullyQualifiedName()
+				if _, ok := msgDoc[name]; ok {
+					break
+				}
 				msgDoc[name] = &MessageDoc{
 					Message: value.Embed(),
 					Fields:  fn.MessageDoc(value.Embed()),
@@ -301,6 +304,9 @@ func (fn Func) EmbedFields(field pgs.Field, enumDoc map[string]interface{}, msgD
 				}
 			} else if el.IsEmbed() {
 				name := el.Embed().FullyQualifiedName()
+				if _, ok := msgDoc[name]; ok {
+					break
+				}
 				msgDoc[name] = &MessageDoc{
 					Message: el.Embed(),
 					Fields:  fn.MessageDoc(el.Embed()),
@@ -314,6 +320,9 @@ func (fn Func) EmbedFields(field pgs.Field, enumDoc map[string]interface{}, msgD
 			}
 		} else if field.Type().IsEmbed() {
 			name := field.Type().Embed().FullyQualifiedName()
+			if _, ok := msgDoc[name]; ok {
+				break
+			}
 			msgDoc[name] = &MessageDoc{
 				Message: field.Type().Embed(),
 				Fields:  fn.MessageDoc(field.Type().Embed()),
@@ -461,9 +470,9 @@ func (fn Func) enumJson(enum pgs.Enum) string {
 	return strings.Join(val, " | ")
 }
 
-func (fn Func) fieldElementJson(el pgs.FieldTypeElem, mapKey bool) string {
+func (fn Func) fieldElementJson(el pgs.FieldTypeElem, embedType map[string]int, mapKey bool) string {
 	if el.IsEmbed() {
-		return fn.messageJson(el.Embed())
+		return fn.messageJson(el.Embed(), embedType)
 	} else if el.IsEnum() {
 		if el.Enum().FullyQualifiedName() == ".google.protobuf.NullValue" {
 			return "null"
@@ -501,7 +510,7 @@ func (fn Func) fieldElementJson(el pgs.FieldTypeElem, mapKey bool) string {
 	}
 }
 
-func (fn Func) embedJson(message pgs.Message) string {
+func (fn Func) embedJson(message pgs.Message, embedType map[string]int) string {
 	switch message.FullyQualifiedName() {
 	case ".google.protobuf.Timestamp":
 		return `"1972-01-01T10:00:20.021Z"`
@@ -528,11 +537,11 @@ func (fn Func) embedJson(message pgs.Message) string {
 	case ".google.protobuf.Struct":
 		return `{"foo": "bar"}`
 	default:
-		return fn.messageJson(message)
+		return fn.messageJson(message, embedType)
 	}
 }
 
-func (fn Func) fieldJson(field pgs.Field) string {
+func (fn Func) fieldJson(field pgs.Field, embedType map[string]int) string {
 	switch field.Type().ProtoType() {
 	case pgs.DoubleT, pgs.FloatT:
 		return `3.1415926`
@@ -558,14 +567,18 @@ func (fn Func) fieldJson(field pgs.Field) string {
 		}
 		return fmt.Sprintf(`"%s"`, fn.enumJson(enum))
 	case pgs.MessageT:
+		embedType[field.FullyQualifiedName()]++
+		if embedType[field.FullyQualifiedName()] > 2 {
+			return "{}"
+		}
 		if field.Type().IsMap() {
-			key := fn.fieldElementJson(field.Type().Key(), true)
-			value := fn.fieldElementJson(field.Type().Element(), false)
+			key := fn.fieldElementJson(field.Type().Key(), embedType, true)
+			value := fn.fieldElementJson(field.Type().Element(), embedType, false)
 			return fmt.Sprintf(`{%s:%s}`, key, value)
 		} else if field.Type().IsRepeated() {
-			return fn.fieldElementJson(field.Type().Element(), false)
+			return fn.fieldElementJson(field.Type().Element(), embedType, false)
 		} else {
-			return fn.embedJson(field.Type().Embed())
+			return fn.embedJson(field.Type().Embed(), embedType)
 		}
 	// TODO: deprecated
 	//case pgs.GroupT:
@@ -574,11 +587,11 @@ func (fn Func) fieldJson(field pgs.Field) string {
 	}
 }
 
-func (fn Func) messageJson(message pgs.Message) string {
+func (fn Func) messageJson(message pgs.Message, embedType map[string]int) string {
 	var lines []string
 
 	for _, field := range message.Fields() {
-		val := fn.fieldJson(field)
+		val := fn.fieldJson(field, embedType)
 		if field.Type().IsRepeated() {
 			val = fmt.Sprintf(`[%s]`, val)
 		}
@@ -590,7 +603,8 @@ func (fn Func) messageJson(message pgs.Message) string {
 
 func (fn Func) JSONDemo(message pgs.Message) string {
 	var prettyJSON bytes.Buffer
-	jsonVal := fn.messageJson(message)
+	embedType := make(map[string]int)
+	jsonVal := fn.messageJson(message, embedType)
 	if err := json.Indent(&prettyJSON, []byte(jsonVal), "", "  "); err != nil {
 		return "json.Indent err:" + err.Error()
 	}
