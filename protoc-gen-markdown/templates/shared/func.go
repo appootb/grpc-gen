@@ -162,7 +162,12 @@ func (fn Func) fieldType(field pgs.Field) (pbType string, jsonType string) {
 		pbType = "bytes"
 		jsonType = "base64 string"
 	case pgs.EnumT:
-		enum := field.Type().Enum()
+		var enum pgs.Enum
+		if field.Type().IsRepeated() {
+			enum = field.Type().Element().Enum()
+		} else {
+			enum = field.Type().Enum()
+		}
 		pbType = fmt.Sprintf("enum [%s](#%s)", enum.Name(), fn.Anchor(enum.Name()))
 		if enum.FullyQualifiedName() == ".google.protobuf.NullValue" {
 			jsonType = "null"
@@ -236,10 +241,16 @@ func (fn Func) MessageDoc(msg pgs.Message) []*MessageDocField {
 func (fn Func) EmbedFields(field pgs.Field, enumDoc map[string]interface{}, msgDoc map[string]interface{}) {
 	switch field.Type().ProtoType() {
 	case pgs.EnumT:
-		name := field.Type().Enum().FullyQualifiedName()
+		var enum pgs.Enum
+		if field.Type().IsRepeated() {
+			enum = field.Type().Element().Enum()
+		} else {
+			enum = field.Type().Enum()
+		}
+		name := enum.FullyQualifiedName()
 		enumDoc[name] = &EnumDoc{
-			Enum:   field.Type().Enum(),
-			Values: fn.EnumDoc(field.Type().Enum()),
+			Enum:   enum,
+			Values: fn.EnumDoc(enum),
 		}
 	case pgs.MessageT:
 		if field.Type().IsMap() {
