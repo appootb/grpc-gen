@@ -547,7 +547,12 @@ func (fn Func) fieldJson(field pgs.Field) string {
 	case pgs.BytesT:
 		return `"YmFzZTY0IHN0cmluZw=="`
 	case pgs.EnumT:
-		enum := field.Type().Enum()
+		var enum pgs.Enum
+		if field.Type().IsRepeated() {
+			enum = field.Type().Element().Enum()
+		} else {
+			enum = field.Type().Enum()
+		}
 		if enum.FullyQualifiedName() == ".google.protobuf.NullValue" {
 			return "null"
 		}
