@@ -143,12 +143,12 @@ func (fn Func) InType(f pgs.Field, x interface{}) string {
 		}
 	case pgs.EnumT:
 		if f.Type().IsRepeated() {
-			return strings.TrimLeft(fn.Type(f).String(), "[]")
+			return strings.TrimLeft(fn.Type(f).Value().String(), "[]")
 		} else {
-			return fn.Type(f).String()
+			return fn.Type(f).Value().String()
 		}
 	default:
-		return fn.Type(f).String()
+		return fn.Type(f).Value().String()
 	}
 }
 
