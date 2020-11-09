@@ -1,7 +1,8 @@
 package golang
 
 const stringTpl = `
-	{{ $f := .Field }}{{ $r := .Rules }}
+	{{ $f := .Field }}{{ $r := .Rules }}{{ $opt := optional $f }}
+	{{ if $opt }}if m.{{ name $f }} != nil { {{ end }}
 	{{ template "const" . }}
 	{{ template "in" . }}
 	{{ if or $r.Len (and $r.MinLen $r.MaxLen (eq $r.GetMinLen $r.GetMaxLen)) }}
@@ -118,6 +119,7 @@ const stringTpl = `
 	if !{{ lookup $f "Pattern" }}.MatchString({{ accessor . }}) {
 		return {{ err . "value does not match regex pattern " (lit $r.GetPattern) }}
 	}
-{{ end }}
+	{{ end }}
+{{ if $opt }} } {{ end }}
 `
 

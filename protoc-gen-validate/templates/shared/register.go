@@ -25,6 +25,7 @@ func Register(tpl *template.Template, params pgs.Parameters) {
 		"pkg":           fn.PackageName,
 		"typ":           fn.Type,
 		"name":          fn.Name,
+		"optional":      fn.Optional,
 		"accessor":      fn.Accessor,
 		"err":           fn.Error,
 		"errname":       fn.ErrorName,

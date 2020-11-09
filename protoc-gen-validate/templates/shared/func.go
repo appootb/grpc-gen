@@ -17,6 +17,10 @@ type Func struct {
 	pgsgo.Context
 }
 
+func (fn Func) Optional(f pgs.Field) bool {
+	return f.Syntax() == pgs.Proto2 && !f.Required()
+}
+
 func (fn Func) Accessor(ctx RuleContext) string {
 	if ctx.AccessorOverride != "" {
 		return ctx.AccessorOverride

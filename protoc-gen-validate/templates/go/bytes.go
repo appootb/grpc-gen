@@ -1,7 +1,8 @@
 package golang
 
 const bytesTpl = `
-	{{ $f := .Field }}{{ $r := .Rules }}
+	{{ $f := .Field }}{{ $r := .Rules }}{{ $opt := optional $f }}
+	{{ if $opt }}if m.{{ name $f }} != nil { {{ end }}
 	{{ if or $r.Len (and $r.MinLen $r.MaxLen (eq $r.GetMinLen $r.GetMaxLen)) }}
 		{{ if $r.Len }}
 			if len({{ accessor . }}) != {{ $r.GetLen }} {
@@ -74,4 +75,5 @@ const bytesTpl = `
 		return {{ err . "value does not match regex pattern " (lit $r.GetPattern) }}
 	}
 	{{ end }}
+{{ if $opt }} } {{ end }}
 `
