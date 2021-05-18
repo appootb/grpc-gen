@@ -33,7 +33,6 @@ var _exampleServiceSubjects = map[string][]permission.Subject{
 
 var _exampleServiceRoles = map[string][]string{
 	"/example.example/Test1": {
-		"admin",
 		"op",
 		"op2",
 	},
@@ -61,14 +60,7 @@ var _exampleBServiceSubjects = map[string][]permission.Subject{
 	},
 }
 
-var _exampleBServiceRoles = map[string][]string{
-	"/example.Example_b/Test2": {
-		"admin",
-	},
-	"/example.Example_b/TestA": {
-		"admin",
-	},
-}
+var _exampleBServiceRoles = map[string][]string{}
 
 type wrapperExampleBServer struct {
 	ExampleBServer

@@ -36,7 +36,6 @@ func (fn Func) ServiceRoles(svc pgs.Service) map[string][]string {
 			}
 		}
 
-		out[fullPath] = append(out[fullPath], "admin")
 		for role := range urlRoles {
 			out[fullPath] = append(out[fullPath], role)
 		}
