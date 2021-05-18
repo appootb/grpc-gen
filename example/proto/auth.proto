@@ -4,6 +4,7 @@ package example;
 
 import "appootb/api/websocket.proto";
 import "appootb/permission/method.proto";
+import "appootb/permission/policy.proto";
 import "appootb/permission/service.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
@@ -56,6 +57,8 @@ service example {
     // test1 comment
     rpc test1 (Request) returns (Response) {
         option (appootb.permission.method.required) = SERVER;
+        option (appootb.permission.policy.roles) = "op";
+        option (appootb.permission.policy.roles) = "op2";
     }
 }
 

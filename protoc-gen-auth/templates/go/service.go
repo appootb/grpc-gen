@@ -13,6 +13,16 @@ var _{{ .Name.LowerCamelCase }}ServiceSubjects = map[string][]permission.Subject
 	{{- end }}
 }
 
+var _{{ .Name.LowerCamelCase }}ServiceRoles = map[string][]string{
+	{{- range $url, $roles := (serviceRoles .) }}
+	"{{ $url }}": {
+		{{- range $role := $roles }}
+		"{{ $role }}",
+		{{- end }}
+	},
+	{{- end }}
+}
+
 {{- if $hasGateway }}
 type wrapper{{ .Name.UpperCamelCase }}Server struct {
 	{{ .Name.UpperCamelCase }}Server
@@ -26,7 +36,7 @@ type wrapper{{ .Name.UpperCamelCase }}Server struct {
 // Register scoped server.
 func Register{{ .Name.UpperCamelCase }}ScopeServer(component string, auth service.Authenticator, impl service.Implementor, srv {{ .Name.UpperCamelCase }}Server) error {
 	// Register service required subjects.
-	auth.RegisterServiceSubjects(component, _{{ .Name.LowerCamelCase }}ServiceSubjects)
+	auth.RegisterServiceSubjects(component, _{{ .Name.LowerCamelCase }}ServiceSubjects, _{{ .Name.LowerCamelCase }}ServiceRoles)
 
 	// Register scoped gRPC server.
 	for _, gRPC := range impl.GetGRPCServer(permission.VisibleScope_{{ (scope .) }}) {

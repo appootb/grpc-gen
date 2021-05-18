@@ -17,6 +17,35 @@ type Func struct {
 	pgsgo.Context
 }
 
+func (fn Func) ServiceRoles(svc pgs.Service) map[string][]string {
+	out := make(map[string][]string)
+	for _, method := range svc.Methods() {
+		fullPath := fmt.Sprintf("/%s.%s/%s", svc.Package().ProtoName(), svc.Name(), method.Name().UpperCamelCase())
+		urlRoles := map[string]int{}
+		opts := method.Descriptor().GetOptions()
+		descs, _ := proto.ExtensionDescs(opts)
+
+		for _, desc := range descs {
+			if desc.TypeDescriptor().Number() == 4507 {
+				ext, _ := proto.GetExtension(opts, desc)
+				if roles, ok := ext.([]string); ok {
+					for _, role := range roles {
+						urlRoles[role]++
+					}
+				}
+			}
+		}
+
+		out[fullPath] = append(out[fullPath], "admin")
+		for role := range urlRoles {
+			out[fullPath] = append(out[fullPath], role)
+		}
+		sort.Strings(out[fullPath])
+	}
+
+	return out
+}
+
 func (fn Func) Access(svc pgs.Service) map[string]Subjects {
 	out := make(map[string]Subjects)
 	defaultAudience := permission.Subject_NONE

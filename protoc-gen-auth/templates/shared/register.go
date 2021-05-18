@@ -18,6 +18,7 @@ func Register(tpl *template.Template, params pgs.Parameters) {
 		"scope":        fn.Scope,
 		"hasGw":        fn.GatewayDefined,
 		"access":       fn.Access,
+		"serviceRoles": fn.ServiceRoles,
 		"goInput":      fn.GolangInputMessageName,
 		"goOutput":     fn.GolangOutputMessageName,
 		"hasWebsocket": fn.WebsocketDefined,

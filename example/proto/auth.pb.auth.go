@@ -31,10 +31,18 @@ var _exampleServiceSubjects = map[string][]permission.Subject{
 	},
 }
 
+var _exampleServiceRoles = map[string][]string{
+	"/example.example/Test1": {
+		"admin",
+		"op",
+		"op2",
+	},
+}
+
 // Register scoped server.
 func RegisterExampleScopeServer(component string, auth service.Authenticator, impl service.Implementor, srv ExampleServer) error {
 	// Register service required subjects.
-	auth.RegisterServiceSubjects(component, _exampleServiceSubjects)
+	auth.RegisterServiceSubjects(component, _exampleServiceSubjects, _exampleServiceRoles)
 
 	// Register scoped gRPC server.
 	for _, gRPC := range impl.GetGRPCServer(permission.VisibleScope_CLIENT) {
@@ -50,6 +58,15 @@ var _exampleBServiceSubjects = map[string][]permission.Subject{
 	},
 	"/example.Example_b/TestA": {
 		permission.Subject_SERVER,
+	},
+}
+
+var _exampleBServiceRoles = map[string][]string{
+	"/example.Example_b/Test2": {
+		"admin",
+	},
+	"/example.Example_b/TestA": {
+		"admin",
 	},
 }
 
@@ -83,7 +100,7 @@ func (w *wrapperExampleBServer) TestA(srv ExampleB_TestAServer) error {
 // Register scoped server.
 func RegisterExampleBScopeServer(component string, auth service.Authenticator, impl service.Implementor, srv ExampleBServer) error {
 	// Register service required subjects.
-	auth.RegisterServiceSubjects(component, _exampleBServiceSubjects)
+	auth.RegisterServiceSubjects(component, _exampleBServiceSubjects, _exampleBServiceRoles)
 
 	// Register scoped gRPC server.
 	for _, gRPC := range impl.GetGRPCServer(permission.VisibleScope_SERVER) {
