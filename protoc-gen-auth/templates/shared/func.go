@@ -61,10 +61,19 @@ func (fn Func) Access(svc pgs.Service) map[string]Subjects {
 		}
 
 		audiences := map[permission.Subject]int{}
+		urlRoles := map[string]int{}
 		opts := method.Descriptor().GetOptions()
 		descs, _ := proto.ExtensionDescs(opts)
 
 		for _, desc := range descs {
+			if desc.TypeDescriptor().Number() == 4507 {
+				ext, _ := proto.GetExtension(opts, desc)
+				if roles, ok := ext.([]string); ok {
+					for _, role := range roles {
+						urlRoles[role]++
+					}
+				}
+			}
 			if desc.TypeDescriptor().Number() == 2507 {
 				ext, _ := proto.GetExtension(opts, desc)
 				if auds, ok := ext.([]permission.Subject); ok {
@@ -94,7 +103,13 @@ func (fn Func) Access(svc pgs.Service) map[string]Subjects {
 		}
 
 		if len(audiences) == 0 {
-			audiences[defaultAudience]++
+			if len(urlRoles) == 0 {
+				audiences[defaultAudience]++
+			} else {
+				audiences[permission.Subject_WEB]++
+				audiences[permission.Subject_PC]++
+				audiences[permission.Subject_MOBILE]++
+			}
 		}
 		for aud := range audiences {
 			out[fullPath] = append(out[fullPath], aud)
