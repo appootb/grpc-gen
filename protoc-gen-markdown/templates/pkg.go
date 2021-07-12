@@ -27,7 +27,7 @@ func FilePathFor(tpl *template.Template) FilePathFn {
 	default:
 		return func(f pgs.File, ctx pgsgo.Context, tpl *template.Template) *pgs.FilePath {
 			out := ctx.OutputPath(f)
-			out = pgs.JoinPaths(out.Dir().String(), f.Name().String()+".md")
+			out = out.SetExt(tpl.Name() + ".md")
 			return &out
 		}
 	}
