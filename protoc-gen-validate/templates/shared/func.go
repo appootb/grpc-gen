@@ -36,6 +36,12 @@ func (fn Func) ErrorIdxCause(ctx RuleContext, idx, cause string, reason ...inter
 	f := ctx.Field
 	n := fn.Name(f)
 
+	if ctx.CustomError != "" {
+		return fmt.Sprintf(`%s{
+			custom: %q,
+		}`, fn.ErrorName(f.Message()), ctx.CustomError)
+	}
+
 	var fld string
 	if idx != "" {
 		fld = fmt.Sprintf(`fmt.Sprintf("%s[%%v]", %s)`, n, idx)

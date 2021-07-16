@@ -39,6 +39,7 @@ func (m {{ (msgTyp .).Pointer }}) Validate() error {
 {{ cmt (errname .) " is the validation error returned by " (msgTyp .) ".Validate if the designated constraints aren't met." -}}
 type {{ errname . }} struct {
 	field  string
+	custom string
 	reason string
 	cause  error
 	key    bool
@@ -55,6 +56,10 @@ func (e {{ errname . }}) Key() bool { return e.key }
 func (e {{ errname . }}) ErrorName() string { return "{{ errname . }}" }
 // Error satisfies the builtin error interface
 func (e {{ errname . }}) Error() string {
+	if e.custom != "" {
+		return e.custom
+	}
+
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)

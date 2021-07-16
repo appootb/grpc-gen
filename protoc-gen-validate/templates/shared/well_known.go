@@ -1,7 +1,7 @@
 package shared
 
 import (
-	"github.com/appootb/protobuf/go/validate"
+	"github.com/appootb/substratum/proto/go/validate"
 	pgs "github.com/lyft/protoc-gen-star"
 )
 

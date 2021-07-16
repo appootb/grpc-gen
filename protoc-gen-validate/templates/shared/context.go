@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"text/template"
 
-	"github.com/appootb/protobuf/go/validate"
+	"github.com/appootb/substratum/proto/go/validate"
 	"github.com/golang/protobuf/proto"
 	pgs "github.com/lyft/protoc-gen-star"
 )
@@ -15,8 +15,9 @@ type RuleContext struct {
 	Rules        proto.Message
 	MessageRules *validate.MessageRules
 
-	Typ        string
-	WrapperTyp string
+	Typ         string
+	WrapperTyp  string
+	CustomError string
 
 	OnKey            bool
 	Index            string
@@ -29,6 +30,11 @@ func RulesContext(f pgs.Field) (out RuleContext, err error) {
 	var rules validate.FieldRules
 	if _, err = f.Extension(validate.E_Rules, &rules); err != nil {
 		return
+	}
+
+	var custom string
+	if ok, _ := f.Extension(validate.E_Error, &custom); ok {
+		out.CustomError = custom
 	}
 
 	var wrapped bool

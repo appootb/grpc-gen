@@ -6,7 +6,6 @@ import (
 
 	"github.com/appootb/protobuf/go/api"
 	"github.com/appootb/protobuf/go/permission"
-	"github.com/golang/protobuf/proto"
 	"github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway/httprule"
 	pgs "github.com/lyft/protoc-gen-star"
 	pgsgo "github.com/lyft/protoc-gen-star/lang/go"
@@ -18,32 +17,27 @@ type Funcs struct {
 }
 
 func (fns Funcs) isWebStream(method pgs.Method) bool {
-	opts := method.Descriptor().GetOptions()
-	descs, _ := proto.ExtensionDescs(opts)
-
-	for _, desc := range descs {
-		if desc.TypeDescriptor().Number() == 3507 {
-			ext, _ := proto.GetExtension(opts, desc)
-			if _, ok := ext.(*api.WebsocketRule); ok {
-				return true
-			}
-		}
+	var rule api.WebsocketRule
+	ok, err := method.Extension(api.E_Websocket, &rule)
+	if err != nil {
+		return false
 	}
-	return false
+	return ok
+}
+
+func (fns Funcs) isWebApi(method pgs.Method) bool {
+	var rules *annotations.HttpRule
+	ok, err := method.Extension(annotations.E_Http, &rules)
+	if err != nil {
+		return false
+	}
+	return ok
 }
 
 func (fns Funcs) hasWebApi(svc pgs.Service) bool {
 	for _, method := range svc.Methods() {
-		opts := method.Descriptor().GetOptions()
-		descs, _ := proto.ExtensionDescs(opts)
-
-		for _, desc := range descs {
-			if desc.TypeDescriptor().Number() == 72295728 {
-				ext, _ := proto.GetExtension(opts, desc)
-				if _, ok := ext.(*annotations.HttpRule); ok {
-					return true
-				}
-			}
+		if fns.isWebApi(method) {
+			return true
 		}
 	}
 	return false
@@ -63,35 +57,23 @@ func (fns Funcs) webStreamPatterns(svc pgs.Service) map[string]httprule.Template
 
 	for _, method := range svc.Methods() {
 		key := fmt.Sprintf("ws_pattern_%s_%s_0", svc.Name(), method.Name().UpperCamelCase())
-		opts := method.Descriptor().GetOptions()
-		descs, _ := proto.ExtensionDescs(opts)
-		for _, desc := range descs {
-			if desc.TypeDescriptor().Number() == 3507 {
-				ext, _ := proto.GetExtension(opts, desc)
-				if rule, ok := ext.(*api.WebsocketRule); ok {
-					c, err := httprule.Parse(rule.Url)
-					if err != nil {
-						continue
-					}
-					patterns[key] = c.Compile()
-				}
-			}
+		var rule *api.WebsocketRule
+		if ok, _ := method.Extension(api.E_Websocket, &rule); !ok {
+			continue
 		}
+		c, err := httprule.Parse(rule.Url)
+		if err != nil {
+			continue
+		}
+		patterns[key] = c.Compile()
 	}
 	return patterns
 }
 
 func (fns Funcs) serviceScope(svc pgs.Service) permission.VisibleScope {
-	opts := svc.Descriptor().GetOptions()
-	descs, _ := proto.ExtensionDescs(opts)
-
-	for _, desc := range descs {
-		if desc.TypeDescriptor().Number() == 1507 {
-			ext, _ := proto.GetExtension(opts, desc)
-			if scope, ok := ext.(*permission.VisibleScope); ok {
-				return *scope
-			}
-		}
+	var scope permission.VisibleScope
+	if ok, _ := svc.Extension(permission.E_Visible, &scope); ok {
+		return scope
 	}
 	return permission.VisibleScope_CLIENT
 }
@@ -133,48 +115,39 @@ func (fns Funcs) serviceSubjects(svc pgs.Service) map[string][]string {
 
 		methodRoles := map[string]int{}
 		methodAudiences := map[permission.Subject]int{}
-		opts := method.Descriptor().GetOptions()
-		descs, _ := proto.ExtensionDescs(opts)
-
-		for _, desc := range descs {
-			// RBAC
-			if desc.TypeDescriptor().Number() == 4507 {
-				ext, _ := proto.GetExtension(opts, desc)
-				if roles, ok := ext.([]string); ok {
-					for _, role := range roles {
-						methodRoles[role]++
-					}
-				}
+		//
+		var (
+			roles    []string
+			subjects []permission.Subject
+		)
+		if ok, _ := method.Extension(permission.E_Roles, &roles); ok {
+			for _, role := range roles {
+				methodRoles[role]++
 			}
-			//
-			if desc.TypeDescriptor().Number() == 2507 {
-				ext, _ := proto.GetExtension(opts, desc)
-				if auds, ok := ext.([]permission.Subject); ok {
-					for _, aud := range auds {
-						switch aud {
-						case permission.Subject_LOGGED_IN:
-							methodAudiences[permission.Subject_WEB]++
-							methodAudiences[permission.Subject_PC]++
-							methodAudiences[permission.Subject_MOBILE]++
-						case permission.Subject_CLIENT:
-							methodAudiences[permission.Subject_GUEST]++
-							methodAudiences[permission.Subject_WEB]++
-							methodAudiences[permission.Subject_PC]++
-							methodAudiences[permission.Subject_MOBILE]++
-						case permission.Subject_ANY:
-							methodAudiences[permission.Subject_GUEST]++
-							methodAudiences[permission.Subject_WEB]++
-							methodAudiences[permission.Subject_PC]++
-							methodAudiences[permission.Subject_MOBILE]++
-							methodAudiences[permission.Subject_SERVER]++
-						default:
-							methodAudiences[aud]++
-						}
-					}
+		}
+		if ok, _ := method.Extension(permission.E_Required, &subjects); ok {
+			for _, subject := range subjects {
+				switch subject {
+				case permission.Subject_LOGGED_IN:
+					methodAudiences[permission.Subject_WEB]++
+					methodAudiences[permission.Subject_PC]++
+					methodAudiences[permission.Subject_MOBILE]++
+				case permission.Subject_CLIENT:
+					methodAudiences[permission.Subject_GUEST]++
+					methodAudiences[permission.Subject_WEB]++
+					methodAudiences[permission.Subject_PC]++
+					methodAudiences[permission.Subject_MOBILE]++
+				case permission.Subject_ANY:
+					methodAudiences[permission.Subject_GUEST]++
+					methodAudiences[permission.Subject_WEB]++
+					methodAudiences[permission.Subject_PC]++
+					methodAudiences[permission.Subject_MOBILE]++
+					methodAudiences[permission.Subject_SERVER]++
+				default:
+					methodAudiences[subject]++
 				}
 			}
 		}
-
 		//
 		if len(methodAudiences) == 0 {
 			if len(methodRoles) == 0 {
@@ -203,20 +176,15 @@ func (fns Funcs) serviceRoles(svc pgs.Service) map[string][]string {
 	for _, method := range svc.Methods() {
 		fullPath := fmt.Sprintf("/%s.%s/%s", svc.Package().ProtoName(), svc.Name(), method.Name().UpperCamelCase())
 		urlRoles := map[string]int{}
-		opts := method.Descriptor().GetOptions()
-		descs, _ := proto.ExtensionDescs(opts)
-
-		for _, desc := range descs {
-			if desc.TypeDescriptor().Number() == 4507 {
-				ext, _ := proto.GetExtension(opts, desc)
-				if roles, ok := ext.([]string); ok {
-					for _, role := range roles {
-						urlRoles[role]++
-					}
-				}
-			}
+		//
+		var roles []string
+		ok, err := method.Extension(permission.E_Roles, &roles)
+		if err != nil || !ok {
+			continue
 		}
-
+		for _, role := range roles {
+			urlRoles[role]++
+		}
 		for role := range urlRoles {
 			out[fullPath] = append(out[fullPath], role)
 		}
@@ -230,6 +198,10 @@ func (fns Funcs) externalPackages(file pgs.File) map[pgs.FilePath]pgs.Name {
 
 	for _, service := range file.Services() {
 		for _, method := range service.Methods() {
+			if !fns.isWebApi(method) && !fns.isWebStream(method) {
+				continue
+			}
+			//
 			if method.Input().Package().ProtoName() != file.Package().ProtoName() &&
 				fns.PackageName(method.Input()) != fns.PackageName(file) {
 				out[fns.ImportPath(method.Input())] = fns.PackageName(method.Input())
