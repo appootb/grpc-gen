@@ -1,47 +1,23 @@
 package markdown
 
 const methodTpl = `
-<h3 id="{{ anchor .Name }}">{{ .Name.UpperCamelCase }}</h3>
+<h3 id="{{ anchorName .Name }}">{{ .Name.UpperCamelCase }}</h3>
 
 > {{ leadingComment .SourceCodeInfo }}
 
-{{ $gateway := (gatewayDoc .) }}
-{{ if $gateway }}
-* HTTP Gateway
+{{ $webDoc := (webDoc .) }}
+{{ if $webDoc }}
+* HTTP
 
-	* URL: {{ $gateway.URL }}
-	* Method: {{ $gateway.Method }}
-{{ if $gateway.JsonRequired }}	* Content-Type: {{ $gateway.ContentType }}{{ end }}
+	* URL: {{ $webDoc.URL }}
+	* Method: {{ $webDoc.Method }}
+{{ if $webDoc.ContentType }}	* Content-Type: {{ $webDoc.ContentType }}{{ end }}
 {{ end }}
-* Request Type: ***{{ .Input.Name.UpperCamelCase }}***
+* Request Type: ***{{ inputMessage . }}***
 
-> {{ leadingComment .Input.SourceCodeInfo }}
+{{ template "message" .Input }}
 
-|Field|proto type|JSON type|Comment|Default|Required|
-|---|---|---|---|---|---|
-{{ range $v := (messageDoc .Input) }}|{{ $v.Name }}|{{ $v.ProtoType }}|{{ $v.JsonType }}|{{ $v.Comment }}|{{ $v.Default }}|{{ $v.Required }}|
-{{ end }}
+* Response Type: ***{{ outputMessage . }}***
 
-{{ if $gateway }}
-{{ if $gateway.JsonRequired }}
-> JSON Demo
-
-{{ (jsonDemo .Input) }}
-{{ end }}
-{{ end }}
-
-* Response Type: ***{{ .Output.Name.UpperCamelCase }}***
-
-> {{ leadingComment .Output.SourceCodeInfo }}
-
-|Field|proto type|JSON type|Comment|Default|Required|
-|---|---|---|---|---|---|
-{{ range $v := (messageDoc .Output) }}|{{ $v.Name }}|{{ $v.ProtoType }}|{{ $v.JsonType }}|{{ $v.Comment }}|{{ $v.Default }}|{{ $v.Required }}|
-{{ end }}
-
-{{ if $gateway }}
-> JSON Demo
-
-{{ (jsonDemo .Output) }}
-{{ end }}
+{{ template "message" .Output }}
 `

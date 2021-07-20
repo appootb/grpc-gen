@@ -8,10 +8,10 @@ const fileTpl = `
 > APIs
 
 {{ range $svc := .Services }}
-* [{{ $svc.Name.UpperCamelCase }}](#{{ anchor $svc.Name }}) - {{ tocComment $svc.SourceCodeInfo }}
+* [{{ $svc.Name.UpperCamelCase }}](#{{ anchorName $svc.Name }}) - {{ tocComment $svc.SourceCodeInfo }}
 {{ range $method := $svc.Methods }}
-{{ $url := (gatewayUrl $method) }}
-	* [{{ $method.Name.UpperCamelCase }}{{ if $url }} ({{ $url }}){{ end }}](#{{ anchor $method.Name }}) - {{ tocComment $method.SourceCodeInfo }}
+{{ $url := (webUrl $method) }}
+	* [{{ $method.Name.UpperCamelCase }}{{ if $url }} ({{ $url }}){{ end }}](#{{ anchorName $method.Name }}) - {{ tocComment $method.SourceCodeInfo }}
 {{ end }}
 {{ end }}
 
@@ -21,39 +21,15 @@ const fileTpl = `
 
 ********
 
-## *Embed Messages*
+## *Embed Enums & Messages*
 
-{{ range $type, $m := (embedMessages .) }}
-{{ if (eq $type "enum") }}
-
-{{ range $name, $t := $m }}
-<h3 id="{{ anchor $t.Name }}">{{ $t.Name.UpperCamelCase }}</h3>
-
-> {{ leadingComment $t.SourceCodeInfo }}
-
-* Enum
-
-|Name (string)|Value (integer)|Comment|
-|---|---|---|
-{{ range $v := $t.Values }}|{{ $v.Name }}|{{ $v.Value }}|{{ $v.Comment }}|
-{{ end }}
+{{ range $enum := (embedEnums .) }}
+{{ template "enum" $enum }}
 {{ end }}
 
-{{ else }}
+{{ range $message := (embedMessages .) }}
+<h3 id="{{ anchorName $message.Name }}">{{ $message.Name.UpperCamelCase }}</h3>
 
-{{ range $name, $t := $m }}
-<h3 id="{{ anchor $t.Name }}">{{ $t.Name.UpperCamelCase }}</h3>
-
-> {{ leadingComment $t.SourceCodeInfo }}
-
-* Fields
-
-|Field|proto type|JSON type|Comment|Default|Required|
-|---|---|---|---|---|---|
-{{ range $v := $t.Fields }}|{{ $v.Name }}|{{ $v.ProtoType }}|{{ $v.JsonType }}|{{ $v.Comment }}|{{ $v.Default }}|{{ $v.Required }}|
-{{ end }}
-{{ end }}
-
-{{ end }}
+{{ template "message" $message }}
 {{ end }}
 `

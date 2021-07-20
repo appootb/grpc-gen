@@ -17,7 +17,7 @@ type Funcs struct {
 }
 
 func (fns Funcs) isWebStream(method pgs.Method) bool {
-	var rule api.WebsocketRule
+	var rule *api.WebsocketRule
 	ok, err := method.Extension(api.E_Websocket, &rule)
 	if err != nil {
 		return false

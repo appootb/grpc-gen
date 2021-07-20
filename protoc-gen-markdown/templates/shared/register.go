@@ -8,19 +8,25 @@ import (
 )
 
 func Register(tpl *template.Template, params pgs.Parameters) {
-	fn := Func{
+	fns := Funcs{
 		Context: pgsgo.InitContext(params),
 	}
 
 	tpl.Funcs(map[string]interface{}{
-		"pkg":            fn.PackageName,
-		"anchor":         fn.Anchor,
-		"gatewayUrl":     fn.GatewayURL,
-		"gatewayDoc":     fn.GatewayDoc,
-		"messageDoc":     fn.MessageDoc,
-		"embedMessages":  fn.EmbedMessages,
-		"tocComment":     fn.TOCComment,
-		"leadingComment": fn.LeadingComment,
-		"jsonDemo":       fn.JSONDemo,
+		"package":         fns.PackageName,
+		"docFileName":     fns.docFileName,
+		"anchorName":      fns.anchorName,
+		"tocComment":      fns.tocComment,
+		"leadingComment":  fns.leadingComment,
+		"trailingComment": fns.trailingComment,
+		"webUrl":          fns.webURL,
+		"webDoc":          fns.webDoc,
+		"inputMessage":    fns.inputMessage,
+		"outputMessage":   fns.outputMessage,
+		"embedEnums":      fns.embedEnums,
+		"embedMessages":   fns.embedMessages,
+		// message field
+		"fieldDoc": fns.fieldDoc,
+		//"fieldRules": fns.fieldRules,
 	})
 }

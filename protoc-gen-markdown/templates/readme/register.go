@@ -1,4 +1,4 @@
-package toc
+package readme
 
 import (
 	"text/template"
