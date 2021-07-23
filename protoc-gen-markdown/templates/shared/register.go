@@ -25,8 +25,8 @@ func Register(tpl *template.Template, params pgs.Parameters) {
 		"outputMessage":   fns.outputMessage,
 		"embedEnums":      fns.embedEnums,
 		"embedMessages":   fns.embedMessages,
-		// message field
-		"fieldDoc": fns.fieldDoc,
-		//"fieldRules": fns.fieldRules,
+		"fieldDoc":        fns.fieldDoc,
+		"jsonDemo":        fns.messageJSONDemo,
+		"jsonWellKnown":   fns.wellKnownJSONDemo,
 	})
 }

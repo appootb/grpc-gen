@@ -38,7 +38,7 @@ func (fns Funcs) fieldElementType(el pgs.FieldTypeElem) string {
 	}
 }
 
-func (fns Funcs) embedJsonType(msg pgs.Message) string {
+func (fns Funcs) embedJSONType(msg pgs.Message) string {
 	if msg.IsWellKnown() {
 		return "object"
 	}
@@ -116,7 +116,7 @@ func (fns Funcs) fieldType(field pgs.Field) (pbType, jsonType string) {
 		} else {
 			msg := field.Type().Embed()
 			pbType = fmt.Sprintf("[%s](#%s)", fns.Name(msg), fns.anchorName(msg.Name()))
-			jsonType = fns.embedJsonType(msg)
+			jsonType = fns.embedJSONType(msg)
 		}
 	// TODO: deprecated
 	case pgs.GroupT:
@@ -137,8 +137,8 @@ func (fns Funcs) fieldDoc(field pgs.Field) string {
 		pbType = fmt.Sprintf("array [%s]", pbType)
 	}
 	columns = append(columns, pbType, jsonType)
-	// TODO validate
-	columns = append(columns, "todo")
+	// validation
+	columns = append(columns, fns.fieldRules(field))
 	// comment
 	columns = append(columns, fns.trailingComment(field.SourceCodeInfo()))
 	if field.Syntax().SupportsRequiredPrefix() {
@@ -151,5 +151,3 @@ func (fns Funcs) fieldDoc(field pgs.Field) string {
 	}
 	return "|" + strings.Join(columns, "|") + "|"
 }
-
-func (fns Funcs) fieldRules(field pgs.Field) {}
