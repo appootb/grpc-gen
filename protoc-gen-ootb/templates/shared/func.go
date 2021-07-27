@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/appootb/protobuf/go/api"
-	"github.com/appootb/protobuf/go/permission"
+	"github.com/appootb/substratum/proto/go/api"
+	"github.com/appootb/substratum/proto/go/permission"
 	"github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway/httprule"
 	pgs "github.com/lyft/protoc-gen-star"
 	pgsgo "github.com/lyft/protoc-gen-star/lang/go"

@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/appootb/protobuf/go/api"
+	"github.com/appootb/substratum/proto/go/api"
 	pgs "github.com/lyft/protoc-gen-star"
 	pgsgo "github.com/lyft/protoc-gen-star/lang/go"
 	"google.golang.org/genproto/googleapis/api/annotations"
