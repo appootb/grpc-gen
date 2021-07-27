@@ -22,12 +22,12 @@ type Funcs struct {
 }
 
 func (fns Funcs) anchorName(name pgs.Name) string {
-	return "ootb_" + name.Transform(strings.ToLower, strings.ToLower, "_").String()
+	return name.Transform(strings.ToLower, strings.ToLower, "").String()
 }
 
 func (fns Funcs) docFileName(file pgs.File) string {
-	name := file.Name().String()
-	extName := path.Ext(path.Base(name))
+	name := path.Base(file.Name().String())
+	extName := path.Ext(name)
 	return strings.ReplaceAll(name, extName, ".pb.md")
 }
 
