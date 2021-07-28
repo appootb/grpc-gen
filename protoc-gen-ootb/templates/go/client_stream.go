@@ -9,7 +9,7 @@ const clientStreamTpl = `
 				return
 			}
 			inbound, outbound := runtime.MarshalerForRequest(mux, r)
-			stream := webstream.NewWebsocketStream(ctx, c, inbound, outbound)
+			stream := gateway.NewWebsocketStream(ctx, c, inbound, outbound)
 			if streamInterceptor == nil {
 				err = srv.{{ .Name.UpperCamelCase }}(&{{ .Service.Name.LowerCamelCase }}{{ .Name.UpperCamelCase }}Server{stream})
 				if err != nil {

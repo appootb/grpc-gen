@@ -9,7 +9,7 @@ const serverStreamTpl = `
 				return
 			}
 			inbound, outbound := runtime.MarshalerForRequest(mux, r)
-			stream := webstream.NewWebsocketStream(ctx, c, inbound, outbound)
+			stream := gateway.NewWebsocketStream(ctx, c, inbound, outbound)
 			req := new({{ inputMessage . }})
 			if err = stream.RecvMsg(req); err != nil {
 				_ = c.WriteClose(http.StatusBadRequest)

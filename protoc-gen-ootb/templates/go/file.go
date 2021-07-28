@@ -9,8 +9,8 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/appootb/substratum/gateway"
 	"github.com/appootb/substratum/proto/go/permission"
-	"github.com/appootb/substratum/proto/go/webstream"
 	"github.com/appootb/substratum/service"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"golang.org/x/net/websocket"
@@ -26,8 +26,8 @@ var (
 	_ = http.StatusOK
 	_ = runtime.String
 	_ = context.TODO()
+	_ = gateway.WebStream{}
 	_ = grpc.ServiceDesc{}
-	_ = webstream.WebStream{}
 	_ = websocket.UnknownFrame
 	_ = permission.Subject_NONE
 	_ = service.UnaryServerInterceptor
