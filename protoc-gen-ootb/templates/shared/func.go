@@ -81,9 +81,9 @@ func (fns Funcs) serviceScope(svc pgs.Service) permission.VisibleScope {
 func (fns Funcs) methodMessageName(method pgs.Method, message pgs.Message) string {
 	if method.Package().ProtoName() != message.Package().ProtoName() &&
 		fns.PackageName(method) != fns.PackageName(message) {
-		return fmt.Sprintf("*%s.%s", fns.PackageName(message).String(), fns.Name(message).String())
+		return fmt.Sprintf("%s.%s", fns.PackageName(message).String(), fns.Name(message).String())
 	}
-	return "*" + fns.Name(message).String()
+	return fns.Name(message).String()
 }
 
 func (fns Funcs) inputMessage(method pgs.Method) string {
