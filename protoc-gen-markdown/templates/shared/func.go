@@ -180,7 +180,7 @@ func (fns Funcs) embedEnums(file pgs.File) []pgs.Enum {
 		enums[enum.FullyQualifiedName()] = enum
 	}
 	//
-	var messages []pgs.Message
+	messages := file.AllMessages()
 	for _, svc := range file.Services() {
 		for _, method := range svc.Methods() {
 			messages = append(messages, method.Input(), method.Output())
@@ -219,7 +219,7 @@ func (fns Funcs) embedEnums(file pgs.File) []pgs.Enum {
 
 func (fns Funcs) embedMessages(file pgs.File) []pgs.Message {
 	messages := map[string]pgs.Message{}
-	for _, msg := range file.Messages() {
+	for _, msg := range file.AllMessages() {
 		messages[msg.FullyQualifiedName()] = msg
 		for _, dep := range msg.Dependents() {
 			messages[dep.FullyQualifiedName()] = dep
