@@ -6,8 +6,8 @@ package example
 import (
 	context "context"
 	fmt "fmt"
-	_ "github.com/appootb/protobuf/go/api"
-	_ "github.com/appootb/protobuf/go/permission"
+	_ "github.com/appootb/substratum/proto/go/api"
+	_ "github.com/appootb/substratum/proto/go/permission"
 	proto "github.com/golang/protobuf/proto"
 	empty "github.com/golang/protobuf/ptypes/empty"
 	_ "google.golang.org/genproto/googleapis/api/annotations"

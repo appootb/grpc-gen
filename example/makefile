@@ -7,11 +7,11 @@ _cleango:
 
 _gengo:
 	@protoc -Iproto \
-		-I${GOPATH}/src/github.com/appootb/protobuf \
-		-I${GOPATH}/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
+		-I${GOPATH}/src/github.com/appootb/substratum/proto \
+		-I${GOPATH}/src/github.com/googleapis/googleapis \
 		--go_out=plugins=grpc:proto \
 		--grpc-gateway_out=logtostderr=true:proto \
-		--auth_out="lang=go:proto" \
+		--ootb_out="lang=go:proto" \
 		--markdown_out=":proto" \
 		proto/*.proto
 
