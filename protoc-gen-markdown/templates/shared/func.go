@@ -21,8 +21,8 @@ type Funcs struct {
 	pgsgo.Context
 }
 
-func (fns Funcs) anchorName(name pgs.Name) string {
-	return name.Transform(strings.ToLower, strings.ToLower, "").String()
+func (fns Funcs) anchorName(node pgs.Node) string {
+	return fns.Name(node).Transform(strings.ToLower, strings.ToLower, "").String()
 }
 
 func (fns Funcs) docFileName(file pgs.File) string {

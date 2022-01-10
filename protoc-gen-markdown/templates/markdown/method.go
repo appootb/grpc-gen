@@ -1,7 +1,7 @@
 package markdown
 
 const methodTpl = `
-<h3 id="{{ anchorName .Name }}">{{ .Name.UpperCamelCase }}</h3>
+<h3 id="{{ anchorName . }}">{{ headerTitle . }}</h3>
 
 > {{ leadingComment .SourceCodeInfo }}
 

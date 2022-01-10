@@ -1,7 +1,7 @@
 package markdown
 
 const serviceTpl = `
-<h2 id="{{ anchorName .Name }}">{{ .Name.UpperCamelCase }}</h2>
+<h2 id="{{ anchorName . }}">{{ headerTitle . }}</h2>
 
 > {{ leadingComment .SourceCodeInfo }}
 
