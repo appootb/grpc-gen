@@ -157,19 +157,21 @@ func (fn Func) IsWebsocket(method pgs.Method) bool {
 }
 
 func (fn Func) GolangInputMessageName(method pgs.Method) string {
-	messageName := method.Input().Name().UpperCamelCase().String()
-	if method.Input().Package() == method.Package() {
-		return messageName
+	message := method.Input()
+	if method.Package().ProtoName() != message.Package().ProtoName() &&
+		fn.PackageName(method) != fn.PackageName(message) {
+		return fmt.Sprintf("%s.%s", fn.PackageName(message).String(), fn.Name(message).String())
 	}
-	return fn.PackageName(method.Input()).String() + "." + messageName
+	return fn.Name(message).String()
 }
 
 func (fn Func) GolangOutputMessageName(method pgs.Method) string {
-	messageName := method.Output().Name().UpperCamelCase().String()
-	if method.Output().Package() == method.Package() {
-		return messageName
+	message := method.Output()
+	if method.Package().ProtoName() != message.Package().ProtoName() &&
+		fn.PackageName(method) != fn.PackageName(message) {
+		return fmt.Sprintf("%s.%s", fn.PackageName(message).String(), fn.Name(message).String())
 	}
-	return fn.PackageName(method.Output()).String() + "." + messageName
+	return fn.Name(message).String()
 }
 
 func (fn Func) GolangImports(file pgs.File) []string {

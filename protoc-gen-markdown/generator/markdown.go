@@ -36,7 +36,7 @@ func (m *Markdown) Execute(targets map[string]pgs.File, pkgs map[string]pgs.Pack
 	)
 
 	// Process file-level templates
-	tpls := templates.Template(m.Parameters())
+	tpls := templates.ProtoTemplate(m.Parameters())
 
 	for _, f := range targets {
 		m.Push(f.Name().String())
@@ -47,7 +47,6 @@ func (m *Markdown) Execute(targets map[string]pgs.File, pkgs map[string]pgs.Pack
 			out := templates.FilePathFor(tpl)(f, m.ctx, tpl)
 			// A nil path means no output should be generated for this file - as controlled by
 			// implementation-specific FilePathFor implementations.
-			// Ex: Don't generate Java validators for files that don't reference PGV.
 			if out != nil {
 				outDir = out.Dir()
 				m.AddGeneratorTemplateFile(out.String(), tpl, f)
@@ -57,11 +56,11 @@ func (m *Markdown) Execute(targets map[string]pgs.File, pkgs map[string]pgs.Pack
 		m.Pop()
 	}
 
-	// Table of Content
-	tocTpl := templates.TOCTemplate(m.Parameters())
+	// README.md
+	tocTpl := templates.ReadMeTemplate(m.Parameters())
 	tocOut := pgs.JoinPaths(outDir.String(), "README.md")
 
-	m.Push("toc")
+	m.Push("readme")
 
 	m.AddGeneratorTemplateFile(tocOut.String(), tocTpl, targets)
 
