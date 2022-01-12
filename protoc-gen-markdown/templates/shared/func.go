@@ -22,7 +22,7 @@ type Funcs struct {
 }
 
 func (fns Funcs) anchorName(node pgs.Node) string {
-	return fns.Name(node).Transform(strings.ToLower, strings.ToLower, "").String()
+	return strings.ToLower(fns.Name(node).String())
 }
 
 func (fns Funcs) docFileName(file pgs.File) string {
