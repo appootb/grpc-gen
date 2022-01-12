@@ -8,10 +8,10 @@ const fileTpl = `
 > APIs
 
 {{ range $svc := .Services }}
-* [{{ $svc.Name.UpperCamelCase }}](#{{ anchorName $svc.Name }}) - {{ tocComment $svc.SourceCodeInfo }}
+* [{{ headerTitle $svc }}](#{{ anchorName $svc }}) - {{ tocComment $svc.SourceCodeInfo }}
 {{ range $method := $svc.Methods }}
 {{ $url := (webUrl $method) }}
-	* [{{ $method.Name.UpperCamelCase }}{{ if $url }} ({{ $url }}){{ end }}](#{{ anchorName $method.Name }}) - {{ tocComment $method.SourceCodeInfo }}
+	* [{{ headerTitle $method }}{{ if $url }} ({{ $url }}){{ end }}](#{{ anchorName $method }}) - {{ tocComment $method.SourceCodeInfo }}
 {{ end }}
 {{ end }}
 
@@ -28,7 +28,7 @@ const fileTpl = `
 {{ end }}
 
 {{ range $message := (embedMessages .) }}
-<h3 id="{{ anchorName $message.Name }}">{{ $message.Name.UpperCamelCase }}</h3>
+<h3 id="{{ anchorName $message }}">{{ headerTitle $message }}</h3>
 
 {{ template "message" $message }}
 {{ end }}

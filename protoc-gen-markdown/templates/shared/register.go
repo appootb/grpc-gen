@@ -16,6 +16,7 @@ func Register(tpl *template.Template, params pgs.Parameters) {
 		"package":         fns.PackageName,
 		"docFileName":     fns.docFileName,
 		"anchorName":      fns.anchorName,
+		"headerTitle":     fns.Name,
 		"tocComment":      fns.tocComment,
 		"leadingComment":  fns.leadingComment,
 		"trailingComment": fns.trailingComment,

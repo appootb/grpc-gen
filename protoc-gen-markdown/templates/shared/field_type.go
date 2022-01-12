@@ -11,13 +11,13 @@ import (
 func (fns Funcs) fieldElementType(el pgs.FieldTypeElem) string {
 	if el.IsEmbed() {
 		msg := el.Embed()
-		return fmt.Sprintf("[%s](#%s)", fns.Name(msg), fns.anchorName(msg.Name()))
+		return fmt.Sprintf("[%s](#%s)", fns.Name(msg), fns.anchorName(msg))
 	} else if el.IsEnum() {
 		enum := el.Enum()
 		if enum.FullyQualifiedName() == ".google.protobuf.NullValue" {
 			return "null"
 		}
-		return fmt.Sprintf("[%s](#%s)", fns.Name(enum), fns.anchorName(enum.Name()))
+		return fmt.Sprintf("[%s](#%s)", fns.Name(enum), fns.anchorName(enum))
 	}
 
 	switch el.ProtoType() {
@@ -98,7 +98,7 @@ func (fns Funcs) fieldType(field pgs.Field) (pbType, jsonType string) {
 		} else {
 			enum = field.Type().Enum()
 		}
-		pbType = fmt.Sprintf("enum [%s](#%s)", fns.Name(enum), fns.anchorName(enum.Name()))
+		pbType = fmt.Sprintf("enum [%s](#%s)", fns.Name(enum), fns.anchorName(enum))
 		jsonType = "string/integer"
 		if enum.FullyQualifiedName() == ".google.protobuf.NullValue" {
 			jsonType = "null"
@@ -115,7 +115,7 @@ func (fns Funcs) fieldType(field pgs.Field) (pbType, jsonType string) {
 			jsonType = "array"
 		} else {
 			msg := field.Type().Embed()
-			pbType = fmt.Sprintf("[%s](#%s)", fns.Name(msg), fns.anchorName(msg.Name()))
+			pbType = fmt.Sprintf("[%s](#%s)", fns.Name(msg), fns.anchorName(msg))
 			jsonType = fns.embedJSONType(msg)
 		}
 	// TODO: deprecated
