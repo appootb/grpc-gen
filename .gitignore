@@ -5,6 +5,11 @@
 *.so
 *.dylib
 
+protoc-gen-dart-export/protoc-gen-dart-export
+protoc-gen-markdown/protoc-gen-markdown
+protoc-gen-ootb/protoc-gen-ootb
+protoc-gen-validate/protoc-gen-validate
+
 #
 .idea
 .vscode
