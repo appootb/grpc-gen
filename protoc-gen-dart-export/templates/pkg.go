@@ -3,7 +3,7 @@ package templates
 import (
 	"text/template"
 
-	"github.com/appootb/grpc-gen/protoc-gen-dart-export/templates/export"
+	"github.com/appootb/grpc-gen/v2/protoc-gen-dart-export/templates/export"
 	pgs "github.com/lyft/protoc-gen-star"
 	pgsgo "github.com/lyft/protoc-gen-star/lang/go"
 )

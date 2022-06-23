@@ -7,16 +7,16 @@ const msgTpl = `
 {{- else -}}
 	{{ cmt "Validate checks the field values on " (msgTyp .) " with the rules defined in the proto definition for this message. If any rules are violated, an error is returned." }}
 {{- end -}}
-func (m {{ (msgTyp .).Pointer }}) Validate() error {
+func (x {{ (msgTyp .).Pointer }}) Validate() error {
 	{{ if disabled . -}}
 		return nil
 	{{ else -}}
-		if m == nil { return nil }
+		if x == nil { return nil }
 		{{ range .NonOneOfFields }}
 			{{ render (context .) }}
 		{{ end }}
 		{{ range .OneOfs }}
-			switch m.{{ name . }}.(type) {
+			switch x.{{ name . }}.(type) {
 				{{ range .Fields }}
 					case {{ oneof . }}:
 						{{ render (context .) }}

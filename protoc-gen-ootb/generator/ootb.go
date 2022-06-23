@@ -1,7 +1,7 @@
 package generator
 
 import (
-	"github.com/appootb/grpc-gen/protoc-gen-ootb/templates"
+	"github.com/appootb/grpc-gen/v2/protoc-gen-ootb/templates"
 	pgs "github.com/lyft/protoc-gen-star"
 	pgsgo "github.com/lyft/protoc-gen-star/lang/go"
 )
@@ -31,7 +31,7 @@ func (m *OutOfTheBox) Name() string {
 	return OutOfTheBoxGenerator
 }
 
-func (m *OutOfTheBox) Execute(targets map[string]pgs.File, pkgs map[string]pgs.Package) []pgs.Artifact {
+func (m *OutOfTheBox) Execute(targets map[string]pgs.File, _ map[string]pgs.Package) []pgs.Artifact {
 	lang := m.Parameters().Str(LangParam)
 	m.Assert(lang != "", "`lang` parameter must be set")
 

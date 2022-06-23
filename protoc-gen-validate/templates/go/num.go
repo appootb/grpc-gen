@@ -1,7 +1,7 @@
 package golang
 
 const numTpl = `{{ $opt := optional .Field }}
-	{{ if $opt }}if m.{{ name .Field }} != nil { {{ end }}
+	{{ if $opt }}if x.{{ name .Field }} != nil { {{ end }}
 	{{ template "const" . }}
 	{{ template "ltgt" . }}
 	{{ template "in" . }}

@@ -1,7 +1,7 @@
 package generator
 
 import (
-	"github.com/appootb/grpc-gen/protoc-gen-validate/templates"
+	"github.com/appootb/grpc-gen/v2/protoc-gen-validate/templates"
 	pgs "github.com/lyft/protoc-gen-star"
 	pgsgo "github.com/lyft/protoc-gen-star/lang/go"
 )
@@ -31,7 +31,7 @@ func (m *Validate) Name() string {
 	return ValidateGenerator
 }
 
-func (m *Validate) Execute(targets map[string]pgs.File, pkgs map[string]pgs.Package) []pgs.Artifact {
+func (m *Validate) Execute(targets map[string]pgs.File, _ map[string]pgs.Package) []pgs.Artifact {
 	lang := m.Parameters().Str(LangParam)
 	m.Assert(lang != "", "`lang` parameter must be set")
 

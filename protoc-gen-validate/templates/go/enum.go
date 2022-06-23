@@ -2,7 +2,7 @@ package golang
 
 const enumTpl = `
 	{{ $f := .Field }}{{ $r := .Rules }}{{ $opt := optional $f }}
-	{{ if $opt }}if m.{{ name $f }} != nil { {{ end }}
+	{{ if $opt }}if x.{{ name $f }} != nil { {{ end }}
 	{{ template "const" . }}
 	{{ template "in" . }}
 	{{ if $r.GetDefinedOnly }}

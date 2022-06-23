@@ -2,7 +2,7 @@ package golang
 
 const stringTpl = `
 	{{ $f := .Field }}{{ $r := .Rules }}{{ $opt := optional $f }}
-	{{ if $opt }}if m.{{ name $f }} != nil { {{ end }}
+	{{ if $opt }}if x.{{ name $f }} != nil { {{ end }}
 	{{ template "const" . }}
 	{{ template "in" . }}
 	{{ if or $r.Len (and $r.MinLen $r.MaxLen (eq $r.GetMinLen $r.GetMaxLen)) }}
@@ -87,15 +87,15 @@ const stringTpl = `
 			return {{ err . "value must be a valid IPv6 address" }}
 		}
 	{{ else if $r.GetEmail }}
-		if err := m._validateEmail({{ accessor . }}); err != nil {
+		if err := x._validateEmail({{ accessor . }}); err != nil {
 			return {{ errCause . "err" "value must be a valid email address" }}
 		}
 	{{ else if $r.GetHostname }}
-		if err := m._validateHostname({{ accessor . }}); err != nil {
+		if err := x._validateHostname({{ accessor . }}); err != nil {
 			return {{ errCause . "err" "value must be a valid hostname" }}
 		}
 	{{ else if $r.GetAddress }}
-		if err := m._validateHostname({{ accessor . }}); err != nil {
+		if err := x._validateHostname({{ accessor . }}); err != nil {
 			if ip := net.ParseIP({{ accessor . }}); ip == nil {
 				return {{ err . "value must be a valid hostname, or ip address" }}
 			}
@@ -111,7 +111,7 @@ const stringTpl = `
 			return {{ errCause . "err" "value must be a valid URI" }}
 		}
 	{{ else if $r.GetUuid }}
-		if err := m._validateUuid({{ accessor . }}); err != nil {
+		if err := x._validateUuid({{ accessor . }}); err != nil {
 			return {{ errCause . "err" "value must be a valid UUID" }}
 		}
 	{{ end }}
@@ -122,4 +122,3 @@ const stringTpl = `
 	{{ end }}
 {{ if $opt }} } {{ end }}
 `
-

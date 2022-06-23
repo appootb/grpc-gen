@@ -1,7 +1,7 @@
 package generator
 
 import (
-	"github.com/appootb/grpc-gen/protoc-gen-markdown/templates"
+	"github.com/appootb/grpc-gen/v2/protoc-gen-markdown/templates"
 	pgs "github.com/lyft/protoc-gen-star"
 	pgsgo "github.com/lyft/protoc-gen-star/lang/go"
 )
@@ -30,7 +30,7 @@ func (m *Markdown) Name() string {
 	return MarkdownGenerator
 }
 
-func (m *Markdown) Execute(targets map[string]pgs.File, pkgs map[string]pgs.Package) []pgs.Artifact {
+func (m *Markdown) Execute(targets map[string]pgs.File, _ map[string]pgs.Package) []pgs.Artifact {
 	var (
 		outDir pgs.FilePath
 	)

@@ -3,7 +3,7 @@ package generator
 import (
 	"path"
 
-	"github.com/appootb/grpc-gen/protoc-gen-dart-export/templates"
+	"github.com/appootb/grpc-gen/v2/protoc-gen-dart-export/templates"
 	pgs "github.com/lyft/protoc-gen-star"
 	pgsgo "github.com/lyft/protoc-gen-star/lang/go"
 )
@@ -33,7 +33,7 @@ func (m *DartExport) Name() string {
 	return DartExportGenerator
 }
 
-func (m *DartExport) Execute(targets map[string]pgs.File, pkgs map[string]pgs.Package) []pgs.Artifact {
+func (m *DartExport) Execute(targets map[string]pgs.File, _ map[string]pgs.Package) []pgs.Artifact {
 	var (
 		outDir  pgs.FilePath
 		outFile = m.Parameters().Str(FileParam)

@@ -9,9 +9,9 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/appootb/substratum/gateway"
-	"github.com/appootb/substratum/proto/go/permission"
-	"github.com/appootb/substratum/service"
+	"github.com/appootb/substratum/v2/gateway"
+	"github.com/appootb/substratum/v2/proto/go/permission"
+	"github.com/appootb/substratum/v2/service"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"golang.org/x/net/websocket"
 	"google.golang.org/grpc"

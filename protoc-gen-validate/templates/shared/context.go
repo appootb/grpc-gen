@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"text/template"
 
-	"github.com/appootb/substratum/proto/go/validate"
-	"github.com/golang/protobuf/proto"
+	"github.com/appootb/substratum/v2/proto/go/validate"
 	pgs "github.com/lyft/protoc-gen-star"
+	"google.golang.org/protobuf/proto"
 )
 
 type RuleContext struct {

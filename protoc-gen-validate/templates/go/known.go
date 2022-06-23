@@ -1,7 +1,7 @@
 package golang
 
 const hostTpl = `
-	func (m {{ (msgTyp .).Pointer }}) _validateHostname(host string) error {
+	func (x {{ (msgTyp .).Pointer }}) _validateHostname(host string) error {
 		s := strings.ToLower(strings.TrimSuffix(host, "."))
 		if len(host) > 253 {
 			return errors.New("hostname cannot exceed 253 characters")
@@ -27,7 +27,7 @@ const hostTpl = `
 `
 
 const emailTpl = `
-	func (m {{ (msgTyp .).Pointer }}) _validateEmail(addr string) error {
+	func (x {{ (msgTyp .).Pointer }}) _validateEmail(addr string) error {
 		a, err := mail.ParseAddress(addr)
 		if err != nil {
 			return err
@@ -40,12 +40,12 @@ const emailTpl = `
 		if len(parts[0]) > 64 {
 			return errors.New("email address local phrase cannot exceed 64 characters")
 		}
-		return m._validateHostname(parts[1])
+		return x._validateHostname(parts[1])
 	}
 `
 
 const uuidTpl = `
-	func (m {{ (msgTyp .).Pointer }}) _validateUuid(uuid string) error {
+	func (x {{ (msgTyp .).Pointer }}) _validateUuid(uuid string) error {
 		if matched := _{{ snakeCase .File.InputPath.BaseName }}_uuidPattern.MatchString(uuid); !matched {
 			return errors.New("invalid uuid format")
 		}

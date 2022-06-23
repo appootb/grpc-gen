@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"time"
 
-	"github.com/golang/protobuf/ptypes"
-	"github.com/golang/protobuf/ptypes/duration"
-	"github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/iancoleman/strcase"
 	pgs "github.com/lyft/protoc-gen-star"
 	pgsgo "github.com/lyft/protoc-gen-star/lang/go"
+	"google.golang.org/protobuf/types/known/durationpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type Func struct {
@@ -18,14 +18,14 @@ type Func struct {
 }
 
 func (fn Func) Optional(f pgs.Field) bool {
-	return f.Syntax() == pgs.Proto2 && !f.Required()
+	return f.Syntax() == pgs.Proto2 && !f.Required() && !f.InOneOf()
 }
 
 func (fn Func) Accessor(ctx RuleContext) string {
 	if ctx.AccessorOverride != "" {
 		return ctx.AccessorOverride
 	}
-	return fmt.Sprintf("m.Get%s()", fn.Name(ctx.Field))
+	return fmt.Sprintf("x.Get%s()", fn.Name(ctx.Field))
 }
 
 func (fn Func) ErrorName(m pgs.Message) pgs.Name {
@@ -146,7 +146,7 @@ func (fn Func) InType(f pgs.Field, x interface{}) string {
 		return "string"
 	case pgs.MessageT:
 		switch x.(type) {
-		case []*duration.Duration:
+		case []*durationpb.Duration:
 			return "time.Duration"
 		default:
 			return pgsgo.TypeName(fmt.Sprintf("%T", x)).Element().String()
@@ -168,9 +168,8 @@ func (fn Func) InKey(f pgs.Field, x interface{}) string {
 		return fn.ByteStr(x.([]byte))
 	case pgs.MessageT:
 		switch x := x.(type) {
-		case *duration.Duration:
-			dur, _ := ptypes.Duration(x)
-			return fn.Lit(int64(dur))
+		case *durationpb.Duration:
+			return fn.Lit(int64(x.AsDuration()))
 		default:
 			return fn.Lit(x)
 		}
@@ -179,40 +178,34 @@ func (fn Func) InKey(f pgs.Field, x interface{}) string {
 	}
 }
 
-func (fn Func) DurationLit(dur *duration.Duration) string {
+func (fn Func) DurationLit(dur *durationpb.Duration) string {
 	return fmt.Sprintf(
 		"time.Duration(%d * time.Second + %d * time.Nanosecond)",
 		dur.GetSeconds(), dur.GetNanos())
 }
 
-func (fn Func) DurationStr(dur *duration.Duration) string {
-	d, _ := ptypes.Duration(dur)
-	return d.String()
+func (fn Func) DurationStr(dur *durationpb.Duration) string {
+	return dur.AsDuration().String()
 }
 
-func (fn Func) DurationGt(a, b *duration.Duration) bool {
-	ad, _ := ptypes.Duration(a)
-	bd, _ := ptypes.Duration(b)
-	return ad > bd
+func (fn Func) DurationGt(a, b *durationpb.Duration) bool {
+	return a.AsDuration() > b.AsDuration()
 }
 
-func (fn Func) TimestampLit(ts *timestamp.Timestamp) string {
+func (fn Func) TimestampLit(ts *timestamppb.Timestamp) string {
+	tsl := ts.AsTime().In(time.Local)
 	return fmt.Sprintf(
 		"time.Unix(%d, %d)",
-		ts.GetSeconds(), ts.GetNanos(),
+		tsl.Second(), tsl.Nanosecond(),
 	)
 }
 
-func (fn Func) TimestampGt(a, b *timestamp.Timestamp) bool {
-	at, _ := ptypes.Timestamp(a)
-	bt, _ := ptypes.Timestamp(b)
-
-	return bt.Before(at)
+func (fn Func) TimestampGt(a, b *timestamppb.Timestamp) bool {
+	return b.AsTime().Before(a.AsTime())
 }
 
-func (fn Func) TimestampStr(ts *timestamp.Timestamp) string {
-	t, _ := ptypes.Timestamp(ts)
-	return t.String()
+func (fn Func) TimestampStr(ts *timestamppb.Timestamp) string {
+	return ts.AsTime().In(time.Local).String()
 }
 
 func (fn Func) Unwrap(ctx RuleContext, name string) (RuleContext, error) {

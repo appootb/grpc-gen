@@ -3,7 +3,7 @@ package templates
 import (
 	"text/template"
 
-	golang "github.com/appootb/grpc-gen/protoc-gen-validate/templates/go"
+	golang "github.com/appootb/grpc-gen/v2/protoc-gen-validate/templates/go"
 	pgs "github.com/lyft/protoc-gen-star"
 	pgsgo "github.com/lyft/protoc-gen-star/lang/go"
 )

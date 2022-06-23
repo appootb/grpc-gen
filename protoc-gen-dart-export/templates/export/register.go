@@ -1,10 +1,11 @@
 package export
 
 import (
-	pgs "github.com/lyft/protoc-gen-star"
 	"text/template"
+
+	pgs "github.com/lyft/protoc-gen-star"
 )
 
-func Register(tpl *template.Template, params pgs.Parameters) {
+func Register(tpl *template.Template, _ pgs.Parameters) {
 	template.Must(tpl.Parse(fileTpl))
 }

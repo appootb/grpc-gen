@@ -3,8 +3,8 @@ package templates
 import (
 	"text/template"
 
-	"github.com/appootb/grpc-gen/protoc-gen-markdown/templates/markdown"
-	"github.com/appootb/grpc-gen/protoc-gen-markdown/templates/readme"
+	"github.com/appootb/grpc-gen/v2/protoc-gen-markdown/templates/markdown"
+	"github.com/appootb/grpc-gen/v2/protoc-gen-markdown/templates/readme"
 	pgs "github.com/lyft/protoc-gen-star"
 	pgsgo "github.com/lyft/protoc-gen-star/lang/go"
 )

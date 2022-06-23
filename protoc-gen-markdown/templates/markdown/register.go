@@ -3,7 +3,7 @@ package markdown
 import (
 	"text/template"
 
-	"github.com/appootb/grpc-gen/protoc-gen-markdown/templates/shared"
+	"github.com/appootb/grpc-gen/v2/protoc-gen-markdown/templates/shared"
 	pgs "github.com/lyft/protoc-gen-star"
 )
 

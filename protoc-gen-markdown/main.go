@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/appootb/grpc-gen/protoc-gen-markdown/generator"
+	"github.com/appootb/grpc-gen/v2/protoc-gen-markdown/generator"
 	pgs "github.com/lyft/protoc-gen-star"
 	pgsgo "github.com/lyft/protoc-gen-star/lang/go"
 )

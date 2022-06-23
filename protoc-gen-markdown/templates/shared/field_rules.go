@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/appootb/substratum/proto/go/validate"
+	"github.com/appootb/substratum/v2/proto/go/validate"
 	pgs "github.com/lyft/protoc-gen-star"
 )
 
