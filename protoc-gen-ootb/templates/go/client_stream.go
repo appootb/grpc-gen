@@ -3,7 +3,7 @@ package golang
 const clientStreamTpl = `
 	mux.Handle("GET", ws_pattern_{{ .Service.Name }}_{{ .Name.UpperCamelCase }}_0, func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
 		fn := func(c *websocket.Conn) {
-			ctx, err := runtime.AnnotateIncomingContext(r.Context(), mux, r)
+			ctx, err := runtime.AnnotateIncomingContext(r.Context(), mux, r, "/{{ .Package.ProtoName }}.{{ .Service.Name }}/{{ .Name.UpperCamelCase }}")
 			if err != nil {
 				_ = c.WriteClose(http.StatusBadRequest)
 				return

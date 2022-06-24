@@ -9,6 +9,8 @@ import "appootb/permission/service.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
 
+option go_package = "github.com/appootb/grpc-gen/example/proto";
+
 enum RequestType {
     _NONE = 0;
     TYPE1 = 1; // request type 1
@@ -78,7 +80,7 @@ service Example_b {
     }
 
     // test3 interface
-    rpc Test_a (stream Request) returns (Response) {
+    rpc Test_a (stream Request) returns (stream Response) {
         option (appootb.permission.method.required) = WEB;
         option (appootb.api.websocket) = {
             url: "/example/stream"

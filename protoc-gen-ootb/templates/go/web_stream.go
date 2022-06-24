@@ -14,7 +14,7 @@ func Register{{ .Name.UpperCamelCase }}WsHandlerServer(mux *runtime.ServeMux, sr
 
 var (
 	{{- range $name, $rule := (webStreamPatterns .) }}
-		{{ $name }} = runtime.MustPattern(runtime.NewPattern(1, []int{ {{ range $rule.OpCodes }}{{ . }},{{ end }} }, []string{ {{ range $rule.Pool }}"{{ . }}",{{ end }} }, "", runtime.AssumeColonVerbOpt(true)))
+		{{ $name }} = runtime.MustPattern(runtime.NewPattern(1, []int{ {{ range $rule.OpCodes }}{{ . }},{{ end }} }, []string{ {{ range $rule.Pool }}"{{ . }}",{{ end }} }, ""))
 	{{- end }}
 )
 `

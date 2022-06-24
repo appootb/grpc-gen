@@ -12,7 +12,7 @@ import (
 	"github.com/appootb/substratum/v2/gateway"
 	"github.com/appootb/substratum/v2/proto/go/permission"
 	"github.com/appootb/substratum/v2/service"
-	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"golang.org/x/net/websocket"
 	"google.golang.org/grpc"
 
